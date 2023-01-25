@@ -8,6 +8,25 @@ shinyServer(function(input, output) {
     req(input$raw_counts)
     file <- vroom::vroom(input$raw_counts$datapath,delim = ",")
   })
+  sampleinfo_data <- reactive({
+    req(input$sampleinfo)
+    file2 <- vroom::vroom(input$sampleinfo$datapath,delim = ",")
+  })
+  output$sampleinfo <- DT::renderDataTable({
+    DT::datatable(sampleinfo_data(),
+                  rownames = FALSE,
+                  options = list(
+                    columnDefs = list(list(targets = '_all', width = "2px")),
+                    columns.type = "num",
+                    scrollCollapse = TRUE,
+                    searching = FALSE,
+                    lengthChange = TRUE,
+                    ordering = FALSE,
+                    paging = TRUE,
+                    pageLength = 20,
+                    scrollX = "200px",
+                    scrollY = "530px"))
+  })
 
   output$raw_counts <- DT::renderDataTable({
     DT::datatable(

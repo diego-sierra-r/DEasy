@@ -14,6 +14,8 @@ shinyUI(fluidPage(
       selectInput(inputId = "pgk",
                   label = "Differential expression package to use:",
                   choices = c("DESeq2","edgeR")),
+      selectInput(inputId = "treatment", label = "Treatment",
+                  choices = 1:2),
       numericInput(inputId = "pvalue",
                    label = "p-value",
                    step = 0.01,
@@ -31,9 +33,13 @@ shinyUI(fluidPage(
                   choices = rownames(brewer.pal.info))
     ),
     mainPanel(
-      tabsetPanel(type = "pills",
-        tabPanel(title = "Input data",
-                           DT::DTOutput("raw_counts")),
+      tabsetPanel(
+        type = "pills",
+        navbarMenu(title = "Preview",
+                             tabPanel(title = "Sample information", 
+                                      DT::DTOutput("sampleinfo")),
+                             tabPanel(title = "Raw counts",
+                                      DT::DTOutput("raw_counts"))),
         tabPanel("Results",
                 dataTableOutput("DE_results")),
         tabPanel("Plots",
@@ -47,7 +53,7 @@ shinyUI(fluidPage(
                   
                 ))
       )
-    ),
+    ), 
   )
 
 ))
