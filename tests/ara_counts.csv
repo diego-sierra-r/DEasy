@@ -1,4 +1,4 @@
-"Reference","Sample_FG2.bam.txt","Sample_FG4.bam.txt","Sample_Fmix1.bam.txt","Sample_Fmix2.bam.txt","Sample_Fmix3.bam.txt","Sample_Fmix4.bam.txt","Sample_FT1.bam.txt","Sample_FT2.bam.txt","Sample_FT3.bam.txt","Sample_FT4.bam.txt","Sample_MG2.bam.txt","Sample_MG3.bam.txt","Sample_MG4.bam.txt","Sample_Mmix2.bam.txt","Sample_Mmix3.bam.txt","Sample_Mmix4.bam.txt","Sample_MT1.bam.txt","Sample_MT2.bam.txt","Sample_MT3.bam.txt","Sample_MT4.bam.txt"
+"Reference","Sample_FG2","Sample_FG4","Sample_Fmix1","Sample_Fmix2","Sample_Fmix3","Sample_Fmix4","Sample_FT1","Sample_FT2","Sample_FT3","Sample_FT4","Sample_MG2","Sample_MG3","Sample_MG4","Sample_Mmix2","Sample_Mmix3","Sample_Mmix4","Sample_MT1","Sample_MT2","Sample_MT3","Sample_MT4"
 "TRINITY_DN10022_c0_g1_i1",0,0,1,1,0,0,0,0,1,1,2,0,0,0,0,0,0,6,0,0
 "TRINITY_DN10032_c0_g1_i1",6,14,123,9,18,11,2,15,21,13,11,6,14,3,14,22,2,1,2,2
 "TRINITY_DN10055_c0_g1_i1",11,2,1,12,0,8,15,2,1,3,7,8,8,12,6,7,18,8,20,6
