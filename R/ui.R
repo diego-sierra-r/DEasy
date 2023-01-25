@@ -18,6 +18,8 @@ shinyUI(fluidPage(
                   choices = c("DESeq2","edgeR")),
       selectInput(inputId = "treatment", label = "Treatment",
                   choices = NULL),
+      selectInput(inputId = "interaction", label = "Add interaction (Optional)",
+                  choices = NULL),
       numericInput(inputId = "pvalue",
                    label = "p-value",
                    step = 0.01,

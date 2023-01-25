@@ -22,6 +22,8 @@ shinyServer(function(input, output) {
                if (!is.null(input$sampleinfo$name)) {
                  updateSelectInput(inputId = "treatment",
                                    choices = colnames(sampleinfo_data()))
+                 updateSelectInput(inputId = "interaction",
+                                   choices = c("None",colnames(sampleinfo_data())))
                }
                )
   
@@ -39,7 +41,7 @@ shinyServer(function(input, output) {
     column <- file2[[input$treatment]] 
   })
   
-  # Define outpus
+  # Define outputs
   output$sampleinfo <- DT::renderDataTable({
     DT::datatable(sampleinfo_data(),
                   rownames = FALSE,
