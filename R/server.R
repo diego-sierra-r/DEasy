@@ -40,9 +40,12 @@ shinyServer(function(input, output) {
     file2 <- vroom::vroom(input$sampleinfo$datapath, delim = ",")
     column <- file2[[input$treatment]] 
   })
-  
+
   # Define outputs
+  
   output$sampleinfo <- DT::renderDataTable({
+    
+    
     DT::datatable(sampleinfo_data(),
                   rownames = FALSE,
                   options = list(
@@ -65,8 +68,9 @@ shinyServer(function(input, output) {
                                         replace = T)
                         )
       )
-
   })
+  
+
 
   output$raw_counts <- DT::renderDataTable({
     DT::datatable(
