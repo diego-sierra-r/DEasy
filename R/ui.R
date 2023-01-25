@@ -1,6 +1,8 @@
 library(shiny)
 library(RColorBrewer)
 
+
+
 # Define UI for application that draws a histogram
 shinyUI(fluidPage(
   
@@ -15,7 +17,7 @@ shinyUI(fluidPage(
                   label = "Differential expression package to use:",
                   choices = c("DESeq2","edgeR")),
       selectInput(inputId = "treatment", label = "Treatment",
-                  choices = 1:2),
+                  choices = NULL),
       numericInput(inputId = "pvalue",
                    label = "p-value",
                    step = 0.01,
