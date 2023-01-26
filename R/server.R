@@ -44,16 +44,20 @@ shinyServer(function(input, output) {
     file2 <- vroom::vroom(input$sampleinfo$datapath, delim = ",")
   })
   treatment_choose <- reactive({
+    req(input$sampleinfo)
     file2 <- vroom::vroom(input$sampleinfo$datapath, delim = ",")
     column <- file2[[input$treatment]] 
   })
   interection_choose <- reactive({
+    req(input$sampleinfo)
     file2 <- vroom::vroom(input$sampleinfo$datapath, delim = ",")
     column <- file2[[input$interaction]] 
   })
 
   # Define outputs
-  treatment_DT <- reactive(DT::datatable(sampleinfo_data(), 
+  treatment_DT <- reactive(
+
+    DT::datatable(sampleinfo_data(), 
                                 # sample information table with colors according treatment
                                 rownames = FALSE,
                                 options = list(
