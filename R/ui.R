@@ -26,16 +26,23 @@ shinyUI(fluidPage(
                    value = 0.05,
                    min = 0.01,
                    max = 0.99),
-      numericInput(inputId = "Treshold",
-                   label = "p-value",
+      numericInput(inputId = "treshold",
+                   label = "Threshold",
                    step = 0.5,
                    value = 2,
                    min = 0.5,
                    max = 4),
       selectInput(inputId = "palette",
                   label = "Color palette",
-                  choices = rownames(brewer.pal.info))
+                  choices = rownames(brewer.pal.info),
+                  selected = "Set1"),
+      # main action button
+      actionButton("run", "Run",
+                   icon =  icon("dna", lib = "font-awesome"),
+                   class = "btn-success btn-lg btn-block")
+      
     ),
+    ### tab panels
     mainPanel(
       tabsetPanel(
         type = "pills",
@@ -45,7 +52,10 @@ shinyUI(fluidPage(
                              tabPanel(title = "Raw counts",
                                       DT::DTOutput("raw_counts"))),
         tabPanel("Results",
-                dataTableOutput("DE_results")),
+                dataTableOutput("DE_results"),
+                actionButton("downloadR","Download",
+                             icon = icon("download"),
+                             class = "btn-info")),
         tabPanel("Plots",
                 column(6,
                   plotOutput("plot1"),
@@ -55,7 +65,10 @@ shinyUI(fluidPage(
                   plotOutput("plot3"),
                   plotOutput("plot4")
                   
-                )),
+                ),
+                actionButton("downloadP","Download",
+                             icon = icon("download"),
+                             class = "btn-info")),
         tabPanel("Help",
                  column(11,
                         htmlOutput(outputId = "readme")

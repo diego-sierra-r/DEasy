@@ -7,25 +7,20 @@ options(shiny.maxRequestSize = 100 *
 
 # define colors needed to customize tables
 set.seed(123)
-colors <- c('#00BFFF','#1E90FF','#6495ED','#7B68EE',
-            '#4169E1','#0000FF','#0000CD','#00008B',
-            '#000080','#191970','#FFF8DC','#FFEBCD',
-            '#FFE4C4','#FFDEAD','#F5DEB3','#DEB887',
-            '#D2B48C','#BC8F8F','#F4A460','#DAA520',
-            '#B8860B','#CD853F','#D2691E','#8B4513',
-            '#A0522D','#A52A2A','#800000','#FFFFFF',
-            '#FFFAFA','#F0FFF0','#F5FFFA','#F0FFFF',
-            '#F0F8FF','#F8F8FF','#F5F5F5','#FFF5EE',
-            '#F5F5DC','#FDF5E6','#FFFAF0','#808080',
-            '#FFFFF0','#FAEBD7','#FAF0E6','#FFF0F5',
-            '#FFE4E1','#DCDCDC','#D3D3D3','#C0C0C0',
-            '#A9A9A9')
-
-#   path to include html on help tabset
-addResourcePath("tmpuser", getwd())
-
-
-            
+colors <- c(
+        '#CD5C5C','#F08080','#FA8072','#E9967A','#FFA07A',
+        '#FFC0CB','#FFB6C1','#FF69B4','#FF1493','#FFA07A',
+        '#FF7F50','#FF6347','#FF8C00','#FFA500','#FFD700',
+        '#FFFF00','#FFFFE0','#FFFACD','#FFDAB9','#EEE8AA',
+        '#F0E68C','#BDB76B','#E6E6FA','#D8BFD8','#DDA0DD',
+        '#EE82EE','#DA70D6','#FF00FF','#FF00FF','#BA55D3',
+        '#9370DB','#ADFF2F','#7FFF00','#7CFC00','#00FF00',
+        '#32CD32','#98FB98','#90EE90','#00FA9A','#00FF7F',
+        '#3CB371','#00FFFF','#00FFFF','#E0FFFF','#AFEEEE',
+        '#7FFFD4','#40E0D0','#48D1CC','#00CED1','#FFF8DC',
+        '#FFEBCD','#FFE4C4','#FFDEAD','#F5DEB3','#DEB887',
+        '#D2B48C','#BC8F8F','#F4A460','#DAA520','#B8860B',
+        '#CD853F','#D2691E')
 
 # Define server logic required to draw a histogram
 shinyServer(function(input, output) {
@@ -58,7 +53,8 @@ shinyServer(function(input, output) {
   })
 
   # Define outputs
-  treatment_DT <- reactive(DT::datatable(sampleinfo_data(), # sample information table with colors according treatment
+  treatment_DT <- reactive(DT::datatable(sampleinfo_data(), 
+                                # sample information table with colors according treatment
                                 rownames = FALSE,
                                 options = list(
                                   columnDefs = list(list(targets = '_all', width = "2px")),
@@ -85,6 +81,7 @@ shinyServer(function(input, output) {
   )
   
   output$sampleinfo <- DT::renderDataTable({
+    ## add colors to preview/sampleinflo if the user selected an interaction
     if (input$interaction == "None") {
       treatment_DT()
     } else {
@@ -100,6 +97,7 @@ shinyServer(function(input, output) {
       )
     }
   }) 
+  # render raw counts
   output$raw_counts <- DT::renderDataTable({
     DT::datatable(
       raw_counts_data(),
