@@ -1,0 +1,18 @@
+---
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+## DEasy!
+
+```{r}
+plot(1:4)
+```
+
+blah blah blah¡
+```{r}
+plot(1:4)
+```
