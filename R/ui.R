@@ -55,9 +55,14 @@ shinyUI(fluidPage(
                   plotOutput("plot3"),
                   plotOutput("plot4")
                   
-                ))
+                )),
+        tabPanel("Help",
+                 column(11,
+                        htmlOutput(outputId = "readme")
+                        )
+                 )
       )
-    ), 
+    ),     
   )
 
 ))

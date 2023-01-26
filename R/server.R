@@ -20,6 +20,11 @@ colors <- c('#00BFFF','#1E90FF','#6495ED','#7B68EE',
             '#FFFFF0','#FAEBD7','#FAF0E6','#FFF0F5',
             '#FFE4E1','#DCDCDC','#D3D3D3','#C0C0C0',
             '#A9A9A9')
+
+#   path to include html on help tabset
+addResourcePath("tmpuser", getwd())
+
+
             
 
 # Define server logic required to draw a histogram
@@ -95,12 +100,6 @@ shinyServer(function(input, output) {
       )
     }
   }) 
-  
-
-
-  
-
-
   output$raw_counts <- DT::renderDataTable({
     DT::datatable(
       raw_counts_data(),
@@ -135,5 +134,8 @@ shinyServer(function(input, output) {
   output$plot4 <- renderPlot({
     plot(9:12)
   })
-
-})
+  output$readme <- renderUI({
+    tags$div(includeHTML("~/Documentos/R/my_pkgs/DEasy/README.html"))
+  })    
+ 
+}) 
