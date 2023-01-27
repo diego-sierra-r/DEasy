@@ -8,11 +8,5 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ## DEasy!
 
-```{r}
-plot(1:4)
-```
-
-blah blah blah¡
-```{r}
-plot(1:4)
-```
+This Shiny-app can make differential gene expression analyses from raw counts.
+(under development).
