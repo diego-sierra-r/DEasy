@@ -24,7 +24,7 @@ colors <- c(
 
 # Define server logic required to draw a histogram
 shinyServer(function(input, output) {
-  #circular reference to treatment select input
+  #circular reference between sampleinfo and treatment select input
   observeEvent(input$sampleinfo,
                if (!is.null(input$sampleinfo$name)) {
                  updateSelectInput(inputId = "treatment",
@@ -33,8 +33,10 @@ shinyServer(function(input, output) {
                                    choices = c("None",colnames(sampleinfo_data())))
                }
                )
-  
-  # load main imput data
+
+
+
+  # load main input data
   raw_counts_data <- reactive({
     req(input$raw_counts)
     file <- vroom::vroom(input$raw_counts$datapath)
@@ -46,17 +48,16 @@ shinyServer(function(input, output) {
   treatment_choose <- reactive({
     req(input$sampleinfo)
     file2 <- vroom::vroom(input$sampleinfo$datapath, delim = ",")
-    column <- file2[[input$treatment]] 
+    column <- file2[[input$treatment]] %>%  as.factor()
   })
   interection_choose <- reactive({
     req(input$sampleinfo)
     file2 <- vroom::vroom(input$sampleinfo$datapath, delim = ",")
-    column <- file2[[input$interaction]] 
+    column <- file2[[input$interaction]] %>%  as.factor()
   })
 
   # Define outputs
   treatment_DT <- reactive(
-
     DT::datatable(sampleinfo_data(), 
                                 # sample information table with colors according treatment
                                 rownames = FALSE,
@@ -85,7 +86,19 @@ shinyServer(function(input, output) {
   )
   
   output$sampleinfo <- DT::renderDataTable({
-    ## add colors to preview/sampleinflo if the user selected an interaction
+    req(input$interaction)
+    # valdidate treatment vr interaction (can't be the same)
+    if (input$treatment == input$interaction) {
+      validate("Treatment an interaction can't be de same")
+    }
+    if (length(levels(treatment_choose())) != 2 ) {
+      validate("Treatment must contain only 2 levels")
+    }
+    if (ncol(raw_counts_data())-1 != nrow(sampleinfo_data())) {
+      validate("The number of rows in sample information and columns in raw counts without genID must be de same  ")
+    }
+    
+    ## add colors to preview/sampleinfo if the user selected an interaction
     if (input$interaction == "None") {
       treatment_DT()
     } else {
@@ -103,6 +116,7 @@ shinyServer(function(input, output) {
   }) 
   # render raw counts
   output$raw_counts <- DT::renderDataTable({
+    req(input$raw_counts)
     DT::datatable(
       raw_counts_data(),
       rownames = FALSE,
