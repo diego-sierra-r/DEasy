@@ -29,7 +29,7 @@ shinyUI(fluidPage(
       numericInput(inputId = "treshold",
                    label = "Threshold",
                    step = 0.5,
-                   value = 2,
+                   value = 0,
                    min = 0.5,
                    max = 4),
       selectInput(inputId = "palette",
