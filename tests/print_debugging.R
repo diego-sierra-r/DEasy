@@ -33,30 +33,14 @@ pasAnno <- system.file("extdata",
                        "pasilla_sample_annotation.csv",
                        package="pasilla", mustWork=TRUE)
 
-rename_rows  <- function(df_s) {
-  rownames(df_s) <- df_s[,1]
-  df_s <- df_s[,2:ncol(df_s)]
-  return(df_s)
-}
 
-validate_row_col <- function(df_s, df_r) {
-  if (ncol(df_r) != nrow(df_s)) {
-    checker <- colnames(df_r) %in% df_s[1]
-    if (checker[1] == FALSE & checker[2] == TRUE) {
-      df_s <- rename_rows(df_s = df_s)
-      if (identical(rownames(df_s), colnames(df_r)) == TRUE) {
-        return(df_s)
-      } else {
-        stop("Raw_counts columns and sample information colums must be excatly the same.")
-      } 
-    } else {
-      stop("Raw_counts columns and sample information colums must be excatly the same...")
-    } 
 
-  } else {
-    return(df_s)
+validate_row_cols  <- function(df_s, df_r) {
+  if (identical(row.names(df_s), colnames(df_r)) == FALSE) {
+    stop("ERROR: Sample IDs on sample information rows and Raw counts columns must be the same \n see example data. ")
   }
 }
+
 
 DE_DESeq2_design  <- function(countData,
                               colData,
@@ -64,7 +48,7 @@ DE_DESeq2_design  <- function(countData,
                               interac = NULL,
                               alpha,
                               threshold) {
-  colData <- validate_row_col(df_s = colData, df_r = countData)
+  countData <- as.matrix(countData)
   treatment =  treatment
   dds <- DESeq2::DESeqDataSetFromMatrix(countData = countData,
                                         colData = colData,
@@ -84,11 +68,12 @@ DE_DESeq2_main <- function(
                  interac = NULL,
                  alpha,
                  threshold) {
-  colData <- validate_row_col(df_s = colData, df_r = countData)
+  
+  validate_row_cols(df_s =  colData,
+                    df_r = countData)
+  
   countData <- as.matrix(countData)
-  if (all(rownames(colData) == colnames(countData)) == FALSE) {
-    stop("Row names on Sample information and col names on raw count are not the same")
-  }
+  
   if (is.null(interac)) {
     
     treatment =  as.formula(paste0("~ ", treatment))
@@ -149,8 +134,8 @@ ix <- DE_DESeq2_main(
   interac = "type"
 )
 
-sample_information <- read.csv("tests/Samples_information.csv")
-raw_coutns <- read.csv("tests/ara_counts.csv")
+sample_information <- read.csv("tests/Samples_information.csv", row.names = 1)
+raw_coutns <- read.csv("tests/ara_counts.csv", row.names = 1)
 
 iix <- DE_DESeq2_main(countData = raw_coutns,
                       colData = sample_information,
