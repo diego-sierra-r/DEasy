@@ -1,4 +1,5 @@
 library(DESeq2)
+library(edgeR)
 library(shiny)
 library("pasilla")
 
@@ -143,6 +144,23 @@ iix <- DE_DESeq2_main(countData = raw_coutns,
                       interac = "None",
                       alpha = 0.05,
                       threshold = 0)
+
+
+
+## edgeR DE_edgeR_main()
+
+# load and filtering
+dgList <- DGEList(counts = raw_coutns, genes = rownames(raw_coutns))
+y <- dgList
+design <- model.matrix(~ sample_information$SEX)
+keep <- filterByExpr(y, design = design)
+y <- y[keep,,keep.lib.sizes=FALSE]
+y <- calcNormFactors(y) #
+y <- estimateDisp(y, design)
+fit <- glmFit(y, design)
+lrt <- glmLRT(fit, coef = 2)
+results <- topTags(lrt)
+
 
 ## MA-plot function
 ## MDS plot function
