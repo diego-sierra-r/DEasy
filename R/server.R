@@ -1,7 +1,10 @@
 library(shiny)
+library(tidyr)
 library(DT)
+library(DESeq2)
 library(magrittr)
 library(dplyr)
+library(ggplot2)
 options(shiny.maxRequestSize = 100 *
           1024^2)
 
@@ -22,6 +25,89 @@ colors <- c(
         '#D2B48C','#BC8F8F','#F4A460','#DAA520','#B8860B',
         '#CD853F','#D2691E')
 
+
+# create funtions for DE with DESeq2
+
+
+validate_row_cols  <- function(df_s, df_r) {
+  if (identical(row.names(df_s), colnames(df_r)) == FALSE) {
+    stop("ERROR: Sample IDs on sample information rows and Raw counts columns must be the same \n see example data. ")
+  }
+}
+
+
+DE_DESeq2_design  <- function(countData,
+                              colData,
+                              treatment,
+                              alpha,
+                              threshold,
+                              interac = NULL) {
+  countData <- as.matrix(countData)
+  treatment =  treatment
+  dds <- DESeq2::DESeqDataSetFromMatrix(countData = countData,
+                                        colData = colData,
+                                        design = treatment)
+  
+  keep <- rowSums(counts(dds)) >= 10
+  dds <- dds[keep, ]
+  dds <- DESeq(dds)
+  res <- results(dds, alpha = alpha, lfcThreshold = threshold)
+  return(as.data.frame(res))
+}
+
+DE_DESeq2_main <- function(
+    countData,
+    colData,
+    treatment,
+    interac = NULL,
+    alpha,
+    threshold) {
+  
+  validate_row_cols(df_s =  colData,
+                    df_r = countData)
+  
+  countData <- as.matrix(countData)
+  
+  if (is.null(interac)) {
+    
+    treatment =  as.formula(paste0("~ ", treatment))
+    
+    res <- DE_DESeq2_design(countData =  countData,
+                            colData =   colData,
+                            treatment =  treatment,
+                            alpha = alpha,
+                            threshold = threshold)
+    
+  } else if (interac == "None") {
+    
+    treatment =  as.formula(paste0("~ ", treatment))
+    res <- DE_DESeq2_design(countData =  countData,
+                            colData =   colData,
+                            treatment =  treatment,
+                            alpha = alpha,
+                            threshold = threshold)
+  } else {
+    treatment =  as.formula(paste0("~ ", treatment, "+ ", interac))
+    res <- DE_DESeq2_design(countData =  countData,
+                            colData =   colData,
+                            treatment =  treatment,
+                            interac =  interac,
+                            alpha = alpha,
+                            threshold = threshold)
+    
+  }
+  res <- as.data.frame(res)
+  
+  res <- res %>% 
+    mutate(., Difference =(case_when(.data$log2FoldChange >= threshold & .data$padj <= 0.05 ~ "UP",
+                                     .data$log2FoldChange <= -threshold & .data$padj <= 0.05 ~ "DOWN",
+                                     .data$log2FoldChange <= threshold | .data$log2FoldChange >= 2 & .data$padj >0.05 ~ "Not significant"))) %>% drop_na()
+  return(res)
+}
+
+
+
+
 # Define server logic required to draw a histogram
 shinyServer(function(input, output) {
   #circular reference between sampleinfo and treatment select input
@@ -39,20 +125,20 @@ shinyServer(function(input, output) {
   # load main input data
   raw_counts_data <- reactive({
     req(input$raw_counts)
-    file <- vroom::vroom(input$raw_counts$datapath)
+    file <- read.csv(input$raw_counts$datapath, row.names = 1)
   })
   sampleinfo_data <- reactive({
     req(input$sampleinfo)
-    file2 <- vroom::vroom(input$sampleinfo$datapath, delim = ",")
+    file2 <- read.csv(input$sampleinfo$datapath, row.names = 1)
   })
   treatment_choose <- reactive({
     req(input$sampleinfo)
-    file2 <- vroom::vroom(input$sampleinfo$datapath, delim = ",")
+    file2 <- read.csv(input$sampleinfo$datapath)
     column <- file2[[input$treatment]] %>%  as.factor()
-  })
+  }) 
   interection_choose <- reactive({
     req(input$sampleinfo)
-    file2 <- vroom::vroom(input$sampleinfo$datapath, delim = ",")
+    file2 <- read.csv(input$sampleinfo$datapath)
     column <- file2[[input$interaction]] %>%  as.factor()
   })
 
@@ -60,7 +146,7 @@ shinyServer(function(input, output) {
   treatment_DT <- reactive(
     DT::datatable(sampleinfo_data(), 
                                 # sample information table with colors according treatment
-                                rownames = FALSE,
+                                rownames = TRUE,
                                 options = list(
                                   columnDefs = list(list(targets = '_all', width = "2px")),
                                   columns.type = "num",
@@ -94,9 +180,6 @@ shinyServer(function(input, output) {
     if (length(levels(treatment_choose())) != 2 ) {
       validate("Treatment must contain only 2 levels")
     }
-    if (ncol(raw_counts_data())-1 != nrow(sampleinfo_data())) {
-      validate("The number of rows in sample information and columns in raw counts without genID must be de same  ")
-    }
     
     ## add colors to preview/sampleinfo if the user selected an interaction
     if (input$interaction == "None") {
@@ -119,7 +202,7 @@ shinyServer(function(input, output) {
     req(input$raw_counts)
     DT::datatable(
       raw_counts_data(),
-      rownames = FALSE,
+      rownames = TRUE,
       options = list(
         columnDefs = list(list(targets = '_all', width = "2px")),
         columns.type = "num",
@@ -133,10 +216,19 @@ shinyServer(function(input, output) {
         scrollY = "530px")
     )
   })
+  
+  results_DE_DESeq2 <- reactive({
+    DE_DESeq2_main(countData = raw_counts_data(),
+                                        colData = sampleinfo_data(),
+                                        treatment = "SEX",
+                                        interac = NULL,
+                                        alpha = 0.05,
+                                        threshold = 2)
     
-  output$DE_results<- renderDataTable({
-    mtcars
+     
   })
+  
+  output$DE_results <-  renderDataTable({results_DE_DESeq2()})
   
   output$plot1 <- renderPlot({
     plot(1:3)
