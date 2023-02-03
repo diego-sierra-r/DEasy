@@ -78,7 +78,7 @@ DE_DESeq2_design  <- function(countData,
   keep <- rowSums(counts(dds)) >= 10
   dds <- dds[keep, ]
   dds <- DESeq(dds)
-  res <- results(dds, alpha = alpha, lfcThreshold = threshold)
+  res <- results(dds, alpha = alpha, lfcThreshold = 0)
   return(as.data.frame(res))
 }
 
@@ -125,10 +125,17 @@ DE_DESeq2_main <- function(
   }
   res <- as.data.frame(res)
   
-  res <- res %>% 
-    mutate(., Difference =(case_when(.data$log2FoldChange >= threshold & .data$padj <= 0.05 ~ "UP",
-                                   .data$log2FoldChange <= -threshold & .data$padj <= 0.05 ~ "DOWN",
-                                   .data$log2FoldChange <= threshold | .data$log2FoldChange >= 2 & .data$padj >0.05 ~ "Not significant"))) %>% drop_na()
+  res <- res %>%
+    mutate(., Difference = (
+      case_when(
+        .data$log2FoldChange >= threshold & .data$padj <= alpha ~ "UP",
+        .data$log2FoldChange <= -threshold &
+          .data$padj <= alpha ~ "DOWN",
+        .data$log2FoldChange <= threshold |
+          .data$padj > alpha ~ "Not significant",
+        is.na(.data$padj) ~ "Not significant"
+      )
+    ))
   return(res)
 }
 
@@ -153,11 +160,11 @@ ix <- DE_DESeq2_main(
   treatment = "condition",
   alpha = 0.05,
   threshold = 0,
-  interac = "type"
+  interac = "None"
 )
 
-sample_information <<- read.csv("tests/Samples_information.csv", row.names = 1)
-raw_coutns <- read.csv("tests/ara_counts.csv", row.names = 1)
+sample_information <- read.csv("~/Documentos/R/my_pkgs/DEasy/tests/Samples_information.csv", row.names = 1)
+raw_coutns <- read.csv("~/Documentos/R/my_pkgs/DEasy/tests/ara_counts.csv", row.names = 1)
 
 iix <- DE_DESeq2_main(countData = raw_coutns,
                       colData = sample_information,
@@ -296,7 +303,94 @@ MDS_plot <- function(countData,
 
 
 ```
-
 ## Individual count plot funtion
+
+```{r}
+
+```
+
 ## heatmap plot function
+```{r}
+
+```
+
 ## MA plot 
+
+```{r}
+
+volcano_plot  <- function(DE_results, x, y, color) {
+  plot <- ggplot(data = DE_results, aes(
+    x = log2(baseMean),
+    y = log2FoldChange,
+    color = Difference
+  )) + geom_point() +
+        labs(color = "Differentially expressed",
+             fill = "Number of transcripts")+ 
+  xlab("Log2 Base-mean")+ ylab("log2 Fold-change")+
+        theme_classic2() +
+  # theme(axis.text.x = element_text(size = 18),
+  #       axis.text.y = element_text(size = 18),
+  #       axis.title.x = element_text(size = 20),
+  #       axis.title.y = element_text(size = 20))+
+  #       coord_fixed(ratio = 2/1) +
+  #       scale_x_continuous(breaks = seq(from = 0, to = 20,2))+
+  #       scale_y_continuous(breaks = seq(from = -10, to = 10,2)) +
+        coord_flip()
+  
+  return(plot)
+}
+
+
+# volcanoplot_phoneutria
+# ggsave(filename = "~/Documentos/R/R_Transcriptome/Transcriptome_Spider/Results_DE/Figure 3.pdf",device = "pdf")
+
+volcano_plot(
+  DE_results = as.data.frame(res),
+  x = log2(.env$baseMean),
+  y = .env$log2FoldChange,
+  color = .env$Difference
+)
+
+```
+
+## visual test
+
+```{r}
+dds <- DESeqDataSetFromMatrix(countData = cts,
+                              colData = coldata,
+                              design = ~ condition)
+keep <- rowSums(counts(dds)) >= 10
+dds <- dds[keep,]
+dds <- DESeq(dds)
+res <- results(dds)
+res
+View(as.data.frame(head(res)))
+
+res2 <- DE_DESeq2_main(countData = cts,
+                       colData = coldata, 
+                       treatment = "condition",interac = NULL,
+                       alpha = 0.1,
+                       threshold = 0)
+View(head(res2))
+
+MA_plot  <- function(df) {
+  plot <- ggplot(data = df, 
+                 aes(x = log2(baseMean),
+                     y = log2FoldChange, 
+                     color = Difference))  +
+    geom_point() +
+#        geom_hex(bins = 30) +
+        labs(color = "Differentially expressed",
+             fill = "Number of transcripts")+ 
+  xlab("Log2 Base-mean")+ ylab("log2 Fold-change")+
+        theme_classic2() +
+        coord_flip()
+
+  return(plot)
+}
+
+MA_plot(res2)
+res2$Difference |> class()
+```
+
+
