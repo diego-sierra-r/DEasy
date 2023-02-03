@@ -5,6 +5,9 @@ library(DESeq2)
 library(magrittr)
 library(dplyr)
 library(ggplot2)
+library(ggrepel)
+library(ggpubr)
+
 options(shiny.maxRequestSize = 100 *
           1024^2)
 
@@ -25,6 +28,43 @@ colors <- c(
         '#D2B48C','#BC8F8F','#F4A460','#DAA520','#B8860B',
         '#CD853F','#D2691E')
 
+# define plot funtions
+
+
+MDS_plot <- function(countData,
+                    colData,
+                    treatment,
+                    interac = "None") {
+  
+  if (interac == "None") {
+    design <- as.formula(paste0("~ ", treatment))
+  } else if (is.null(interac)) {
+    design <- as.formula(paste0("~ ", treatment))
+  } else {
+    design =  as.formula(paste0("~ ", treatment, "+ ", interac))
+    
+  }
+  dds <- DESeqDataSetFromMatrix(countData = as.matrix(countData),
+                                colData = colData,
+                                design = design)
+  vsd_0 <- vst(dds, blind = F) # calcualte dispersion trend
+  sampleDists <- dist(t(assay(vsd_0))) #Calculate distance matrix
+  sampleDistMatrix <- as.matrix( sampleDists ) # Create distance matrix
+  mdsData <- data.frame(cmdscale(sampleDistMatrix)) #perform MDS
+  mds <- cbind(mdsData, as.data.frame(colData(vsd_0)))
+  
+  F_vr_M_DESeq2_MDS <-  ggplot(mds, aes(X1,X2,color=SEX)) +
+    geom_label_repel(aes(label = rownames(mds)), size = 3) +
+    geom_point(size=3) +
+    scale_color_manual(values =  c("#B22222","#8B008B"),
+                       labels = c("Female", "Male"),
+                       name = "Sex") +
+    labs(title = "Females vr Males DESeq2",
+         x = "Dim 1",
+         y = "Dim 2") +
+    theme_classic2()
+  return(F_vr_M_DESeq2_MDS)
+}
 
 # create funtions for DE with DESeq2
 
@@ -218,12 +258,14 @@ shinyServer(function(input, output) {
   })
   
   results_DE_DESeq2 <- reactive({
-    DE_DESeq2_main(countData = raw_counts_data(),
-                                        colData = sampleinfo_data(),
-                                        treatment = "SEX",
-                                        interac = NULL,
-                                        alpha = 0.05,
-                                        threshold = 2)
+    DE_DESeq2_main(
+      countData = raw_counts_data(),
+      colData = sampleinfo_data(),
+      treatment = input$treatment,
+      interac = input$interaction,
+      alpha = 0.05,
+      threshold = 2
+    )
     
      
   })
@@ -231,7 +273,15 @@ shinyServer(function(input, output) {
   output$DE_results <-  renderDataTable({results_DE_DESeq2()})
   
   output$plot1 <- renderPlot({
-    plot(1:3)
+    if (input$treatment == input$interaction) {
+      validate("Treatment an interaction can't be de same")
+    }
+    MDS_plot(
+      countData = raw_counts_data(),
+      colData = sampleinfo_data(),
+      treatment =  input$treatment,
+      interac = input$interaction
+    )
   })
   output$plot2 <- renderPlot({
     plot(3:6)
