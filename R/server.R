@@ -91,7 +91,7 @@ DE_DESeq2_design  <- function(countData,
   keep <- rowSums(counts(dds)) >= 10
   dds <- dds[keep, ]
   dds <- DESeq(dds)
-  res <- results(dds, alpha = alpha, lfcThreshold = threshold)
+  res <- results(dds, alpha = alpha, lfcThreshold = 0)
   return(as.data.frame(res))
 }
 
@@ -138,13 +138,19 @@ DE_DESeq2_main <- function(
   }
   res <- as.data.frame(res)
   
-  res <- res %>% 
-    mutate(., Difference =(case_when(.data$log2FoldChange >= threshold & .data$padj <= 0.05 ~ "UP",
-                                     .data$log2FoldChange <= -threshold & .data$padj <= 0.05 ~ "DOWN",
-                                     .data$log2FoldChange <= threshold | .data$log2FoldChange >= 2 & .data$padj >0.05 ~ "Not significant"))) %>% drop_na()
+  res <- res %>%
+    mutate(., Difference = (
+      case_when(
+        .data$log2FoldChange >= threshold & .data$padj <= alpha ~ "UP",
+        .data$log2FoldChange <= -threshold &
+          .data$padj <= alpha ~ "DOWN",
+        .data$log2FoldChange <= threshold |
+          .data$padj > alpha ~ "Not significant",
+        is.na(.data$padj) ~ "Not significant"
+      )
+    ))
   return(res)
 }
-
 
 
 
@@ -263,8 +269,8 @@ shinyServer(function(input, output) {
       colData = sampleinfo_data(),
       treatment = input$treatment,
       interac = input$interaction,
-      alpha = 0.05,
-      threshold = 2
+      alpha = input$pvalue,
+      threshold = input$treshold
     )
     
      
