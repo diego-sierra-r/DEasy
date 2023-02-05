@@ -10,7 +10,12 @@ library(pasilla)
 library(ggpubr)
 library(ggrepel)
 library(rlang)
-
+library(reshape2)
+library(viridis)
+library(ggdendro)
+library(gridExtra)
+library(gtable)
+library(grid)
 ```
 
 ```{r "render README.Rmd"}
@@ -359,21 +364,6 @@ x2 <-
     returnData = TRUE
   )
 
-# trara de solucionar esto usado una expresion con paste0( df,"$", var)
-
-var
-ggplot(x2,
-       aes(
-       x = var[[1]],
-         y = count,
-         color = var[[1]],
-       )) + geom_point()  + 
-    theme_classic2() +
-        labs(title = NULL,
-         y = "Counts",
-         x = "Treatment",
-         color = "")
-
 single_gen_plot(geneID = "TRINITY_DN43706_c0_g2_i2",
                 countData = raw_coutns,
                 ColData = sample_information,
@@ -384,6 +374,122 @@ single_gen_plot(geneID = "TRINITY_DN43706_c0_g2_i2",
 
 ## heatmap plot function
 ```{r}
+ggheatmap <- function(countData,
+                      colData,
+                      treatment,
+                      interac,
+                      threshold,
+                      alpha
+                      ) {
+    if (interac == "None") {
+    design <- as.formula(paste0("~ ", treatment))
+  } else if (is.null(interac)) {
+    design <- as.formula(paste0("~ ", treatment))
+  } else {
+    design =  as.formula(paste0("~ ", treatment, "+ ", interac))
+  }
+  deseq2Data <- DESeqDataSetFromMatrix(countData = as.matrix(countData),
+                                colData = colData,
+                                design = design)
+  deseq2Data <- DESeq(deseq2Data)
+  deseq2Results <- results(deseq2Data)
+deseq2ResDF <- as.data.frame(deseq2Results)
+
+deseq2Data <- deseq2Data[rowSums(counts(deseq2Data)) > 10, ]
+deseq2VST <- vst(deseq2Data)
+deseq2VST <- assay(deseq2VST)
+deseq2VST <- as.data.frame(deseq2VST)
+deseq2VST$Gene <- rownames(deseq2VST)
+head(deseq2VST)
+
+sigGenes <-
+  rownames(deseq2ResDF[deseq2ResDF$padj <= as.numeric(alpha) &
+                         abs(deseq2ResDF$log2FoldChange) > as.numeric(threshold), ])
+deseq2VST <- deseq2VST[deseq2VST$Gene %in% sigGenes,]
+deseq2VST <- melt(deseq2VST, id.vars=c("Gene"))
+
+
+heatmap <- ggplot(deseq2VST, aes(x=variable, y=Gene, fill=value)) + geom_raster() + scale_fill_viridis(trans="sqrt") + theme(axis.text.x=element_text(angle=65, hjust=1), axis.text.y=element_blank(), axis.ticks.y=element_blank())
+heatmap
+
+deseq2VSTMatrix <- dcast(deseq2VST, Gene ~ variable)
+rownames(deseq2VSTMatrix) <- deseq2VSTMatrix$Gene
+deseq2VSTMatrix$Gene <- NULL
+distanceGene <- dist(deseq2VSTMatrix)
+distanceSample <- dist(t(deseq2VSTMatrix))
+clusterGene <- hclust(distanceGene, method="average")
+clusterSample <- hclust(distanceSample, method="average")
+sampleModel <- as.dendrogram(clusterSample)
+sampleDendrogramData <- segment(dendro_data(sampleModel, type = "rectangle"))
+sampleDendrogram <- ggplot(sampleDendrogramData) + geom_segment(aes(x = x, y = y, xend = xend, yend = yend)) + theme_dendro()
+deseq2VST$variable <- factor(deseq2VST$variable, levels=clusterSample$labels[clusterSample$order])
+
+heatmap <- ggplot(deseq2VST, aes(x=variable, y=Gene, fill=value)) + geom_raster() + scale_fill_viridis(trans="sqrt") + theme(axis.text.x=element_text(angle=65, hjust=1), axis.text.y=element_blank(), axis.ticks.y=element_blank())
+heatmap
+grid.arrange(sampleDendrogram, heatmap, ncol=1, heights=c(1,5))
+
+sampleDendrogram_1 <- sampleDendrogram + scale_x_continuous(expand=c(.0085, .0085)) + scale_y_continuous(expand=c(0, 0))
+sampleDendrogramGrob <- ggplotGrob(sampleDendrogram_1)
+heatmapGrob <- ggplotGrob(heatmap_1)
+sampleDendrogramGrob <- gtable_add_cols(sampleDendrogramGrob, heatmapGrob$widths[7], 6)
+sampleDendrogramGrob <- gtable_add_cols(sampleDendrogramGrob, heatmapGrob$widths[8], 7)
+maxWidth <- unit.pmax(sampleDendrogramGrob$widths, heatmapGrob$widths)
+sampleDendrogramGrob$widths <- as.list(maxWidth)
+heatmapGrob$widths <- as.list(maxWidth)
+
+heatmap_1 <- heatmap + scale_x_discrete(expand=c(0, 0)) + scale_y_discrete(expand=c(0, 0))
+finalGrob <- arrangeGrob(sampleDendrogramGrob, heatmapGrob, ncol=1, heights=c(2,5))
+grid.draw(finalGrob)
+return(grid.draw(finalGrob))
+
+}########################
+
+deseq2Data <- DESeqDataSetFromMatrix(countData=raw_coutns, 
+                                     colData=sample_information, 
+                                     design= ~ SEX)
+deseq2Data <- DESeq(deseq2Data)
+
+deseq2Results <- results(deseq2Data)
+deseq2ResDF <- as.data.frame(deseq2Results)
+
+deseq2Data <- deseq2Data[rowSums(counts(deseq2Data)) > 10, ]
+deseq2VST <- vst(deseq2Data)
+deseq2VST <- assay(deseq2VST)
+deseq2VST <- as.data.frame(deseq2VST)
+deseq2VST$Gene <- rownames(deseq2VST)
+head(deseq2VST)
+
+sigGenes <-
+  rownames(deseq2ResDF[deseq2ResDF$padj <= .05 &
+                         abs(deseq2ResDF$log2FoldChange) > 2, ])
+deseq2VST <- deseq2VST[deseq2VST$Gene %in% sigGenes,]
+deseq2VST <- melt(deseq2VST, id.vars=c("Gene"))
+
+
+heatmap <- ggplot(deseq2VST, aes(x=variable, y=Gene, fill=value)) + geom_raster() + scale_fill_viridis(trans="sqrt") + theme(axis.text.x=element_text(angle=65, hjust=1), axis.text.y=element_blank(), axis.ticks.y=element_blank())
+heatmap
+
+deseq2VSTMatrix <- dcast(deseq2VST, Gene ~ variable)
+rownames(deseq2VSTMatrix) <- deseq2VSTMatrix$Gene
+deseq2VSTMatrix$Gene <- NULL
+distanceGene <- dist(deseq2VSTMatrix)
+distanceSample <- dist(t(deseq2VSTMatrix))
+clusterGene <- hclust(distanceGene, method="average")
+clusterSample <- hclust(distanceSample, method="average")
+sampleModel <- as.dendrogram(clusterSample)
+sampleDendrogramData <- segment(dendro_data(sampleModel, type = "rectangle"))
+sampleDendrogram <- ggplot(sampleDendrogramData) + geom_segment(aes(x = x, y = y, xend = xend, yend = yend)) + theme_dendro()
+deseq2VST$variable <- factor(deseq2VST$variable, levels=clusterSample$labels[clusterSample$order])
+
+heatmap <- ggplot(deseq2VST, aes(x=variable, y=Gene, fill=value)) + geom_raster() + scale_fill_viridis(trans="sqrt") + theme(axis.text.x=element_text(angle=65, hjust=1), axis.text.y=element_blank(), axis.ticks.y=element_blank())
+heatmap
+grid.arrange(sampleDendrogram, heatmap, ncol=1, heights=c(1,5))
+
+sampleDendrogram_1 <- sampleDendrogram + scale_x_continuous(expand=c(.0085, .0085)) + scale_y_continuous(expand=c(0, 0))
+heatmap_1 <- heatmap + scale_x_discrete(expand=c(0, 0)) + scale_y_discrete(expand=c(0, 0))
+finalGrob <- arrangeGrob(sampleDendrogramGrob, heatmapGrob, ncol=1, heights=c(2,5))
+grid.draw(finalGrob)
+
 
 ```
 

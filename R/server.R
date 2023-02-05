@@ -1,12 +1,19 @@
-library(shiny)
-library(tidyr)
-library(DT)
 library(DESeq2)
-library(magrittr)
+library(tidyr)
 library(dplyr)
+library(edgeR)
 library(ggplot2)
-library(ggrepel)
+library(shiny)
+library(pasilla)
 library(ggpubr)
+library(ggrepel)
+library(rlang)
+library(reshape2)
+library(viridis)
+library(ggdendro)
+library(gridExtra)
+library(gtable)
+library(grid)
 
 options(shiny.maxRequestSize = 100 *
           1024^2)
@@ -121,6 +128,86 @@ single_gen_plot <- function(geneID, countData, ColData, treatment, interaction =
   return(plot)
 }
 
+## heatmap plot 
+
+ggheatmap <- function(countData,
+                      colData,
+                      treatment,
+                      interac,
+                      threshold,
+                      alpha
+) {
+  if (interac == "None") {
+    design <- as.formula(paste0("~ ", treatment))
+  } else if (is.null(interac)) {
+    design <- as.formula(paste0("~ ", treatment))
+  } else {
+    design =  as.formula(paste0("~ ", treatment, "+ ", interac))
+  }
+  deseq2Data <- DESeqDataSetFromMatrix(countData = as.matrix(countData),
+                                       colData = colData,
+                                       design = design)
+  deseq2Data <- DESeq(deseq2Data)
+  deseq2Results <- results(deseq2Data)
+  deseq2ResDF <- as.data.frame(deseq2Results)
+  
+  deseq2Data <- deseq2Data[rowSums(counts(deseq2Data)) > 10, ]
+  deseq2VST <- vst(deseq2Data)
+  deseq2VST <- assay(deseq2VST)
+  deseq2VST <- as.data.frame(deseq2VST)
+  deseq2VST$Gene <- rownames(deseq2VST)
+  head(deseq2VST)
+  
+  sigGenes <-
+    rownames(deseq2ResDF[deseq2ResDF$padj <= as.numeric(alpha) &
+                           abs(deseq2ResDF$log2FoldChange) > as.numeric(threshold), ])
+  deseq2VST <- deseq2VST[deseq2VST$Gene %in% sigGenes,]
+  deseq2VST <- melt(deseq2VST, id.vars=c("Gene"))
+  
+  
+  heatmap <- ggplot(deseq2VST, 
+                    aes(x=variable, y=Gene, fill=value)) +
+    geom_raster() + scale_fill_viridis(trans="sqrt") + 
+    theme(axis.text.x=element_text(angle=65, hjust=1),
+          axis.text.y=element_blank(),
+          axis.ticks.y=element_blank()) +
+    labs(title = NULL,
+         y = "Gene",
+         x = NULL)
+  
+  deseq2VSTMatrix <- dcast(deseq2VST, Gene ~ variable)
+  rownames(deseq2VSTMatrix) <- deseq2VSTMatrix$Gene
+  deseq2VSTMatrix$Gene <- NULL
+  distanceGene <- dist(deseq2VSTMatrix)
+  distanceSample <- dist(t(deseq2VSTMatrix))
+  clusterGene <- hclust(distanceGene, method="average")
+  clusterSample <- hclust(distanceSample, method="average")
+  sampleModel <- as.dendrogram(clusterSample)
+  sampleDendrogramData <- segment(dendro_data(sampleModel, type = "rectangle"))
+  sampleDendrogram <- ggplot(sampleDendrogramData) + geom_segment(aes(x = x, y = y, xend = xend, yend = yend)) + theme_dendro()
+  deseq2VST$variable <- factor(deseq2VST$variable, levels=clusterSample$labels[clusterSample$order])
+  
+  heatmap <- ggplot(deseq2VST, aes(x=variable, y=Gene, fill=value)) + geom_raster() + scale_fill_viridis(trans="sqrt") + theme(axis.text.x=element_text(angle=65, hjust=1), axis.text.y=element_blank(), axis.ticks.y=element_blank())
+  heatmap
+  grid.arrange(sampleDendrogram, heatmap, ncol=1, heights=c(1,5))
+  
+  sampleDendrogram_1 <- sampleDendrogram + scale_x_continuous(expand=c(.0085, .0085)) + scale_y_continuous(expand=c(0, 0))
+  heatmap_1 <- heatmap + scale_x_discrete(expand=c(0, 0)) + scale_y_discrete(expand=c(0, 0))
+  sampleDendrogramGrob <- ggplotGrob(sampleDendrogram_1)
+  heatmapGrob <- ggplotGrob(heatmap_1)
+  sampleDendrogramGrob <- gtable_add_cols(sampleDendrogramGrob, heatmapGrob$widths[7], 6)
+  sampleDendrogramGrob <- gtable_add_cols(sampleDendrogramGrob, heatmapGrob$widths[8], 7)
+  maxWidth <- unit.pmax(sampleDendrogramGrob$widths, heatmapGrob$widths)
+  sampleDendrogramGrob$widths <- as.list(maxWidth)
+  heatmapGrob$widths <- as.list(maxWidth)
+  
+  heatmap_1 <- heatmap + scale_x_discrete(expand=c(0, 0)) + scale_y_discrete(expand=c(0, 0))
+  finalGrob <- arrangeGrob(sampleDendrogramGrob, heatmapGrob, ncol=1, heights=c(2,5))
+  grid.draw(finalGrob)
+  return(grid.draw(finalGrob))
+
+}
+
 # create funtions for DE with DESeq2
 
 
@@ -136,7 +223,7 @@ DE_DESeq2_design  <- function(countData,
                               treatment,
                               alpha,
                               threshold,
-                              interac = NULL) {
+                              interac = NULL) { 
   countData <- as.matrix(countData)
   treatment =  treatment
   dds <- DESeq2::DESeqDataSetFromMatrix(countData = countData,
@@ -282,7 +369,7 @@ shinyServer(function(input, output) {
     req(input$interaction)
     # valdidate treatment vr interaction (can't be the same)
     if (input$treatment == input$interaction) {
-      validate("Treatment an interaction can't be de same")
+      validate("Treatment an interaction can't be the same")
     }
     if (length(levels(treatment_choose())) != 2 ) {
       validate("Treatment must contain only 2 levels")
@@ -326,7 +413,7 @@ shinyServer(function(input, output) {
   
   results_DE_DESeq2 <- reactive({
     if (input$treatment == input$interaction) {
-      validate("Treatment an interaction can't be de same")
+      validate("Treatment an interaction can't be the same")
     }
     
     DE_DESeq2_main(
@@ -341,16 +428,18 @@ shinyServer(function(input, output) {
      
   })
   
-  observeEvent(input$run, {
-    output$DE_results <- renderDataTable({
-      results_DE_DESeq2()
-    })
+  output$DE_results <- renderDataTable({
+    results_DE_DESeq2()
   })
+  #observeEvent(input$run, {
+#
+  #  })
+  #})
   
   
   output$plot1 <- renderPlot({
     if (input$treatment == input$interaction) {
-      validate("Treatment an interaction can't be de same")
+      validate("Treatment an interaction can't be the same")
     }
     MDS_plot(
       countData = raw_counts_data(),
@@ -361,16 +450,22 @@ shinyServer(function(input, output) {
   })
   output$plot2 <- renderPlot({
     if (input$treatment == input$interaction) {
-      validate("Treatment an interaction can't be de same")
+      validate("Treatment an interaction can't be the same")
     }
     MA_plot(results_DE_DESeq2()) 
   })
   output$plot3 <- renderPlot({
-    plot(6:9)
+    ggheatmap(countData = raw_counts_data(),
+              colData = sampleinfo_data(),
+              treatment = input$treatment,
+              interac = input$interaction,
+              threshold = input$treshold,
+              alpha = input$pvalue
+              )
   }) 
   output$plot4 <- renderPlot({
     if (input$treatment == input$interaction) {
-      validate("Treatment an interaction can't be de same")
+      validate("Treatment an interaction can't be the same")
     }
     if (is.null(input$geneID)) {
       validate("You have to provide a genID from raw counts data.")
