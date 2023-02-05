@@ -29,7 +29,7 @@ shinyUI(fluidPage(
       numericInput(inputId = "treshold",
                    label = "Threshold",
                    step = 0.5,
-                   value = 0,
+                   value = 2,
                    min = 0.5,
                    max = 4),
       selectInput(inputId = "palette",
@@ -37,7 +37,7 @@ shinyUI(fluidPage(
                   choices = rownames(brewer.pal.info),
                   selected = "Set1"),
       # main action button
-      actionButton("run", "Run",
+      actionButton(inputId = "run", label = "Run",
                    icon =  icon("dna", lib = "font-awesome"),
                    class = "btn-success btn-lg btn-block")
       
@@ -64,7 +64,12 @@ shinyUI(fluidPage(
                   ),
                 column(6,
                   plotOutput("plot3"),
-                  plotOutput("plot4")
+                  plotOutput("plot4"),
+                  textInput(inputId = "geneID",
+                            label =  "gene ID",width = "400px",
+                            placeholder = "Write gene ID from raw counts",
+                            value = NULL
+                              )
                   
                 ),
                 actionButton("downloadP","Download",

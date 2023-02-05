@@ -4,8 +4,13 @@ library(DESeq2)
 library(tidyr)
 library(dplyr)
 library(edgeR)
+library(ggplot2)
 library(shiny)
 library(pasilla)
+library(ggpubr)
+library(ggrepel)
+library(rlang)
+
 ```
 
 ```{r "render README.Rmd"}
@@ -306,6 +311,74 @@ MDS_plot <- function(countData,
 ## Individual count plot funtion
 
 ```{r}
+single_gen_plot <- function(geneID, countData, ColData, treatment, interaction = "None") {
+  if (interaction == "None") {
+    design = as.formula(paste0("~ ", treatment))
+  } else if (is.null(interaction)) {
+    design = as.formula(paste0("~ ", treatment))
+  } else {
+    design = as.formula(paste0("~ ", treatment, "+ ", interaction))
+  }
+
+  deseq2Data <-DESeqDataSetFromMatrix(countData = countData,
+                           colData = ColData,
+                           design = design)
+  intgroup = c(colnames(deseq2Data@colData))
+  otop2Counts <-
+  plotCounts(
+    deseq2Data,
+    gene = as.character(geneID),
+    intgroup = intgroup,
+    returnData = TRUE
+  )
+
+ 
+plot <- ggplot(otop2Counts,
+       aes(
+       x =  !! sym(names(otop2Counts)[2]),
+         y = count,
+         color = !! sym(names(otop2Counts)[2]),
+       )) + geom_point()  + 
+    theme_classic2() +
+        labs(title = NULL,
+         x = "Counts",
+         y = "Treatment",
+         color = "")
+  return(plot)
+}
+
+
+x1 <-DESeqDataSetFromMatrix(countData = raw_coutns,
+                           colData = sample_information,
+                           design = ~ SEX)
+x2 <-
+  plotCounts(
+    x1,
+    gene = as.character("TRINITY_DN43706_c0_g2_i2"),
+    intgroup = c(colnames(sample_information)),
+    returnData = TRUE
+  )
+
+# trara de solucionar esto usado una expresion con paste0( df,"$", var)
+
+var
+ggplot(x2,
+       aes(
+       x = var[[1]],
+         y = count,
+         color = var[[1]],
+       )) + geom_point()  + 
+    theme_classic2() +
+        labs(title = NULL,
+         y = "Counts",
+         x = "Treatment",
+         color = "")
+
+single_gen_plot(geneID = "TRINITY_DN43706_c0_g2_i2",
+                countData = raw_coutns,
+                ColData = sample_information,
+                treatment = "SEX",
+                interaction = "None")
 
 ```
 
@@ -318,38 +391,21 @@ MDS_plot <- function(countData,
 
 ```{r}
 
-volcano_plot  <- function(DE_results, x, y, color) {
-  plot <- ggplot(data = DE_results, aes(
-    x = log2(baseMean),
-    y = log2FoldChange,
-    color = Difference
-  )) + geom_point() +
+MA_plot  <- function(df) {
+  plot <- ggplot(data = df, 
+                 aes(x = log2(baseMean),
+                     y = log2FoldChange, 
+                     color = Difference))  +
+    geom_point(alpha = 0.75) +
+#        geom_hex(bins = 30) +
         labs(color = "Differentially expressed",
              fill = "Number of transcripts")+ 
   xlab("Log2 Base-mean")+ ylab("log2 Fold-change")+
         theme_classic2() +
-  # theme(axis.text.x = element_text(size = 18),
-  #       axis.text.y = element_text(size = 18),
-  #       axis.title.x = element_text(size = 20),
-  #       axis.title.y = element_text(size = 20))+
-  #       coord_fixed(ratio = 2/1) +
-  #       scale_x_continuous(breaks = seq(from = 0, to = 20,2))+
-  #       scale_y_continuous(breaks = seq(from = -10, to = 10,2)) +
         coord_flip()
-  
+
   return(plot)
 }
-
-
-# volcanoplot_phoneutria
-# ggsave(filename = "~/Documentos/R/R_Transcriptome/Transcriptome_Spider/Results_DE/Figure 3.pdf",device = "pdf")
-
-volcano_plot(
-  DE_results = as.data.frame(res),
-  x = log2(.env$baseMean),
-  y = .env$log2FoldChange,
-  color = .env$Difference
-)
 
 ```
 
@@ -366,31 +422,14 @@ res <- results(dds)
 res
 View(as.data.frame(head(res)))
 
-res2 <- DE_DESeq2_main(countData = cts,
-                       colData = coldata, 
-                       treatment = "condition",interac = NULL,
+res2 <- DE_DESeq2_main(countData = raw_coutns,
+                       colData = sample_information, 
+                       treatment = "SEX",interac = NULL,
                        alpha = 0.1,
-                       threshold = 0)
+                       threshold = 2)
 View(head(res2))
 
-MA_plot  <- function(df) {
-  plot <- ggplot(data = df, 
-                 aes(x = log2(baseMean),
-                     y = log2FoldChange, 
-                     color = Difference))  +
-    geom_point() +
-#        geom_hex(bins = 30) +
-        labs(color = "Differentially expressed",
-             fill = "Number of transcripts")+ 
-  xlab("Log2 Base-mean")+ ylab("log2 Fold-change")+
-        theme_classic2() +
-        coord_flip()
-
-  return(plot)
-}
-
 MA_plot(res2)
-res2$Difference |> class()
-```
+res2$Difference |> class()```
 
 

@@ -66,6 +66,61 @@ MDS_plot <- function(countData,
   return(F_vr_M_DESeq2_MDS)
 }
 
+## MA-plot function 
+
+MA_plot  <- function(df) {
+  plot <- ggplot(data = df, 
+                 aes(x = log2(baseMean),
+                     y = log2FoldChange, 
+                     color = Difference))  +
+    geom_point(alpha = 0.75) +
+    #        geom_hex(bins = 30) +
+    labs(color = "Differentially expressed",
+         fill = "Number of transcripts")+ 
+    xlab("Log2 Base-mean")+ ylab("log2 Fold-change")+
+    theme_classic2() +
+    coord_flip()
+  
+  return(plot)
+}
+
+# single_GenID_plot
+single_gen_plot <- function(geneID, countData, ColData, treatment, interaction = "None") {
+  if (interaction == "None") {
+    design = as.formula(paste0("~ ", treatment))
+  } else if (is.null(interaction)) {
+    design = as.formula(paste0("~ ", treatment))
+  } else {
+    design = as.formula(paste0("~ ", treatment, "+ ", interaction))
+  }
+  
+  deseq2Data <-DESeqDataSetFromMatrix(countData = countData,
+                                      colData = ColData,
+                                      design = design)
+  intgroup = c(colnames(deseq2Data@colData))
+  otop2Counts <-
+    plotCounts(
+      deseq2Data,
+      gene = as.character(geneID),
+      intgroup = intgroup,
+      returnData = TRUE
+    )
+  
+  
+  plot <- ggplot(otop2Counts,
+                 aes(
+                   x =  !! sym(names(otop2Counts)[2]),
+                   y = count,
+                   color = !! sym(names(otop2Counts)[2]),
+                 )) + geom_point()  + 
+    theme_classic2() +
+    labs(title = NULL,
+         y = "Counts",
+         x = "Treatment",
+         color = "")
+  return(plot)
+}
+
 # create funtions for DE with DESeq2
 
 
@@ -165,6 +220,12 @@ shinyServer(function(input, output) {
                                    choices = c("None",colnames(sampleinfo_data())))
                }
                )
+  
+  observeEvent(input$geneID,
+               if (is.null(input$geneID)) {
+                 updateSelectInput(inputId = "geneID",
+                                   value = rownames(sampleinfo_data())[1])
+               })
 
 
 
@@ -264,6 +325,10 @@ shinyServer(function(input, output) {
   })
   
   results_DE_DESeq2 <- reactive({
+    if (input$treatment == input$interaction) {
+      validate("Treatment an interaction can't be de same")
+    }
+    
     DE_DESeq2_main(
       countData = raw_counts_data(),
       colData = sampleinfo_data(),
@@ -276,7 +341,12 @@ shinyServer(function(input, output) {
      
   })
   
-  output$DE_results <-  renderDataTable({results_DE_DESeq2()})
+  observeEvent(input$run, {
+    output$DE_results <- renderDataTable({
+      results_DE_DESeq2()
+    })
+  })
+  
   
   output$plot1 <- renderPlot({
     if (input$treatment == input$interaction) {
@@ -290,13 +360,31 @@ shinyServer(function(input, output) {
     )
   })
   output$plot2 <- renderPlot({
-    plot(3:6)
+    if (input$treatment == input$interaction) {
+      validate("Treatment an interaction can't be de same")
+    }
+    MA_plot(results_DE_DESeq2()) 
   })
   output$plot3 <- renderPlot({
     plot(6:9)
-  })
+  }) 
   output$plot4 <- renderPlot({
-    plot(9:12)
+    if (input$treatment == input$interaction) {
+      validate("Treatment an interaction can't be de same")
+    }
+    if (is.null(input$geneID)) {
+      validate("You have to provide a genID from raw counts data.")
+      
+    }
+    if (input$geneID == "") {
+      validate("You have to provide a genID from raw counts data.")
+      
+    }
+    single_gen_plot(geneID = input$geneID,
+                    countData = raw_counts_data(),
+                    ColData = sampleinfo_data(),
+                    treatment = input$treatment,
+                    interaction = input$interaction)
   })
   output$readme <- renderUI({
     tags$div(includeHTML("~/Documentos/R/my_pkgs/DEasy/README.html"))
