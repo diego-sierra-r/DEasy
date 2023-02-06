@@ -2,6 +2,7 @@
 ```{r}
 library(DESeq2)
 library(tidyr)
+library(magrittr)
 library(dplyr)
 library(edgeR)
 library(ggplot2)
@@ -225,7 +226,10 @@ get_model <- function(df, var) {
 
 DE_edgeR_design <- function(countData,
                             colData,
-                            treatment) {
+                            treatment,
+                            threshold,
+                            alpha
+                            ) {
   dgList <- DGEList(counts = countData, genes = rownames(countData))
   y <- dgList
   design <- get_model(colData, treatment)
@@ -236,13 +240,27 @@ DE_edgeR_design <- function(countData,
   fit <- glmQLFit(y, design)
   qlf <- glmQLFTest(fit, coef = 2)
   qlf$table$FDR <- p.adjust(qlf$table$PValue, method = "BH")
-  return(qlf)
+  qlf$table <- qlf$table %>%
+    mutate(., Difference = (
+      case_when(
+        .data$logFC >= threshold & .data$FDR <= alpha ~ "UP",
+        .data$logFC <= -threshold &
+          .data$FDR <= alpha ~ "DOWN",
+        .data$logFC <= threshold |
+          .data$FDR > alpha ~ "Not significant",
+        is.na(.data$FDR) ~ "Not significant"
+      )
+    ))
+  
+  return(qlf$table)
 }
 
 DE_edgeR_main <- function(countData,
                           colData,
                           interac = NULL,
-                          treatment) {
+                          treatment,
+                          threshold,
+                          alpha) {
   validate_row_cols(df_s =  colData,
                     df_r = countData)
   if (is.null(interac)) {
@@ -250,19 +268,25 @@ DE_edgeR_main <- function(countData,
     treatment = c(treatment,interac)
     qlf <- DE_edgeR_design(countData = countData,
                     colData = colData,
-                    treatment = treatment)
+                    treatment = treatment,
+                    threshold = threshold,
+                    alpha = alpha )
     
   } else if (interac == "None") {
     treatment =  treatment
     qlf <- DE_edgeR_design(countData = countData,
                            colData = colData,
-                           treatment = treatment)
+                           treatment = treatment,
+                    threshold = threshold,
+                    alpha = alpha)
     
   } else {
     treatment =  c(treatment,interac)
     qlf <- DE_edgeR_design(countData = countData,
                            colData = colData,
-                           treatment = treatment)
+                           treatment = treatment,
+                    threshold = threshold,
+                    alpha = alpha)
     
     
   }
@@ -275,7 +299,9 @@ x <-  DE_edgeR_main(
   countData = raw_coutns,
   colData = sample_information,
   interac = "DIET",
-  treatment = "SEX"
+  treatment = "SEX",
+  threshold = 2,
+  alpha = 0.05
 )
 ```
 

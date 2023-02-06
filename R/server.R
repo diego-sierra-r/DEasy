@@ -210,7 +210,6 @@ ggheatmap <- function(countData,
 
 # create funtions for DE with edgeR
 
-
 get_model <- function(df, var) {
   if (length(var) == 1) {
     factor1 <- as.factor(df[[1]])
@@ -229,7 +228,10 @@ get_model <- function(df, var) {
 
 DE_edgeR_design <- function(countData,
                             colData,
-                            treatment) {
+                            treatment,
+                            threshold,
+                            alpha
+) {
   dgList <- DGEList(counts = countData, genes = rownames(countData))
   y <- dgList
   design <- get_model(colData, treatment)
@@ -240,13 +242,27 @@ DE_edgeR_design <- function(countData,
   fit <- glmQLFit(y, design)
   qlf <- glmQLFTest(fit, coef = 2)
   qlf$table$FDR <- p.adjust(qlf$table$PValue, method = "BH")
+  qlf$table <- qlf$table %>%
+    mutate(., Difference = (
+      case_when(
+        .data$logFC >= threshold & .data$FDR <= alpha ~ "UP",
+        .data$logFC <= -threshold &
+          .data$FDR <= alpha ~ "DOWN",
+        .data$logFC <= threshold |
+          .data$FDR > alpha ~ "Not significant",
+        is.na(.data$FDR) ~ "Not significant"
+      )
+    ))
+  
   return(qlf$table)
 }
 
 DE_edgeR_main <- function(countData,
                           colData,
                           interac = NULL,
-                          treatment) {
+                          treatment,
+                          threshold,
+                          alpha) {
   validate_row_cols(df_s =  colData,
                     df_r = countData)
   if (is.null(interac)) {
@@ -254,25 +270,30 @@ DE_edgeR_main <- function(countData,
     treatment = c(treatment,interac)
     qlf <- DE_edgeR_design(countData = countData,
                            colData = colData,
-                           treatment = treatment)
+                           treatment = treatment,
+                           threshold = threshold,
+                           alpha = alpha )
     
   } else if (interac == "None") {
     treatment =  treatment
     qlf <- DE_edgeR_design(countData = countData,
                            colData = colData,
-                           treatment = treatment)
+                           treatment = treatment,
+                           threshold = threshold,
+                           alpha = alpha)
     
   } else {
     treatment =  c(treatment,interac)
     qlf <- DE_edgeR_design(countData = countData,
                            colData = colData,
-                           treatment = treatment)
+                           treatment = treatment,
+                           threshold = threshold,
+                           alpha = alpha)
     
     
   }
   return(qlf)
 }
-
 
 # create funtions for DE with DESeq2
 
@@ -482,13 +503,13 @@ shinyServer(function(input, output) {
       validate("Treatment an interaction can't be the same")
     }
     
-    DE_DESeq2_main(
+    DE_edgeR_main(
       countData = raw_counts_data(),
       colData = sampleinfo_data(),
       treatment = input$treatment,
-      interac = input$interaction
-      #alpha = input$pvalue,  ####### I have to implement teh case when here
-      #threshold = input$treshold
+      interac = input$interaction,
+      alpha = input$pvalue,
+      threshold = input$treshold
     )
   })
   ## I have to conect the selectInput and add a conditional to choose between DEseq2 and edgeR
@@ -518,7 +539,9 @@ shinyServer(function(input, output) {
         countData = raw_counts_data(),
         colData = sampleinfo_data(),
         treatment = input$treatment,
-        interac = input$interaction
+        interac = input$interaction,
+        threshold = input$treshold,
+        alpha = input$pvalue
       )
     }
   })
@@ -544,7 +567,7 @@ shinyServer(function(input, output) {
     if (input$treatment == input$interaction) {
       validate("Treatment an interaction can't be the same")
     }
-    MA_plot(results_DE_DESeq2()) 
+    MA_plot(results()) 
   })
   output$plot3 <- renderPlot({
     ggheatmap(countData = raw_counts_data(),
