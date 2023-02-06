@@ -208,6 +208,72 @@ ggheatmap <- function(countData,
 
 }
 
+# create funtions for DE with edgeR
+
+
+get_model <- function(df, var) {
+  if (length(var) == 1) {
+    factor1 <- as.factor(df[[1]])
+    model <- model.matrix(~ factor1)
+    return(model)
+  } else {
+    factor1 <- as.factor(df[[1]])
+    factor2 <- as.factor(df[[2]])
+    model <- model.matrix(~ factor1 + factor2)
+    return(model)
+  }
+}
+
+
+
+
+DE_edgeR_design <- function(countData,
+                            colData,
+                            treatment) {
+  dgList <- DGEList(counts = countData, genes = rownames(countData))
+  y <- dgList
+  design <- get_model(colData, treatment)
+  keep <- filterByExpr(y, design = design)
+  y <- y[keep,,keep.lib.sizes=FALSE]
+  y <- calcNormFactors(y) #
+  y <- estimateDisp(y, design, robust = TRUE)
+  fit <- glmQLFit(y, design)
+  qlf <- glmQLFTest(fit, coef = 2)
+  qlf$table$FDR <- p.adjust(qlf$table$PValue, method = "BH")
+  return(qlf$table)
+}
+
+DE_edgeR_main <- function(countData,
+                          colData,
+                          interac = NULL,
+                          treatment) {
+  validate_row_cols(df_s =  colData,
+                    df_r = countData)
+  if (is.null(interac)) {
+    
+    treatment = c(treatment,interac)
+    qlf <- DE_edgeR_design(countData = countData,
+                           colData = colData,
+                           treatment = treatment)
+    
+  } else if (interac == "None") {
+    treatment =  treatment
+    qlf <- DE_edgeR_design(countData = countData,
+                           colData = colData,
+                           treatment = treatment)
+    
+  } else {
+    treatment =  c(treatment,interac)
+    qlf <- DE_edgeR_design(countData = countData,
+                           colData = colData,
+                           treatment = treatment)
+    
+    
+  }
+  return(qlf)
+}
+
+
 # create funtions for DE with DESeq2
 
 
@@ -411,7 +477,7 @@ shinyServer(function(input, output) {
     )
   })
   
-  results_DE_DESeq2 <- reactive({
+  results_DE_edgeR <- eventReactive(input$run,{
     if (input$treatment == input$interaction) {
       validate("Treatment an interaction can't be the same")
     }
@@ -420,21 +486,47 @@ shinyServer(function(input, output) {
       countData = raw_counts_data(),
       colData = sampleinfo_data(),
       treatment = input$treatment,
-      interac = input$interaction,
-      alpha = input$pvalue,
-      threshold = input$treshold
+      interac = input$interaction
+      #alpha = input$pvalue,  ####### I have to implement teh case when here
+      #threshold = input$treshold
     )
-    
-     
   })
+  ## I have to conect the selectInput and add a conditional to choose between DEseq2 and edgeR
   
+  
+
   output$DE_results <- renderDataTable({
     results_DE_DESeq2()
   })
-  #observeEvent(input$run, {
-#
-  #  })
-  #})
+  
+  results <- eventReactive(input$run,{
+    if (input$treatment == input$interaction) {
+      validate("Treatment an interaction can't be the same")
+    }
+    
+    if (input$pgk == "DESeq2") {
+      DE_DESeq2_main(
+        countData = raw_counts_data(),
+        colData = sampleinfo_data(),
+        treatment = input$treatment,
+        interac = input$interaction,
+        alpha = input$pvalue,
+        threshold = input$treshold
+      )
+    }else if (input$pgk == "edgeR") {
+      DE_edgeR_main(
+        countData = raw_counts_data(),
+        colData = sampleinfo_data(),
+        treatment = input$treatment,
+        interac = input$interaction
+      )
+    }
+  })
+  
+  output$DE_results <- renderDataTable({
+    results()
+  })
+
   
   
   output$plot1 <- renderPlot({

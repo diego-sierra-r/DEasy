@@ -15,7 +15,9 @@ shinyUI(fluidPage(
       titlePanel("Parameters"),
       selectInput(inputId = "pgk",
                   label = "Differential expression package to use:",
-                  choices = c("DESeq2","edgeR")),
+                  choices = c("DESeq2","edgeR"),
+                  selected = "DESeq2"
+                  ),
       selectInput(inputId = "treatment", label = "Treatment",
                   choices = NULL),
       selectInput(inputId = "interaction", label = "Add interaction (Optional)",
@@ -67,7 +69,7 @@ shinyUI(fluidPage(
                   plotOutput("plot4"),
                   textInput(inputId = "geneID",
                             label =  "gene ID",width = "400px",
-                            placeholder = "Write gene ID from raw counts",
+                            placeholder = "Write a geneID from raw counts",
                             value = NULL
                               )
                   

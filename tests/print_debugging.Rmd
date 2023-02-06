@@ -208,7 +208,6 @@ qlf <- p.adjust(qlf$table$FDR, method = "BH")
 
 
 get_model <- function(df, var) {
-  browser()
   if (length(var) == 1) {
     factor1 <- as.factor(df[[1]])
     model <- model.matrix(~ factor1)
@@ -227,7 +226,6 @@ get_model <- function(df, var) {
 DE_edgeR_design <- function(countData,
                             colData,
                             treatment) {
-  browser()
   dgList <- DGEList(counts = countData, genes = rownames(countData))
   y <- dgList
   design <- get_model(colData, treatment)
@@ -245,7 +243,6 @@ DE_edgeR_main <- function(countData,
                           colData,
                           interac = NULL,
                           treatment) {
-  browser()
   validate_row_cols(df_s =  colData,
                     df_r = countData)
   if (is.null(interac)) {
