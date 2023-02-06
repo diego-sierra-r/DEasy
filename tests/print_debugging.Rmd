@@ -207,18 +207,20 @@ qlf <- glmQLFTest(fit, coef = 2)
 qlf <- p.adjust(qlf$table$FDR, method = "BH")
 
 
-get_model <- function(df,var) {
+get_model <- function(df, var) {
   browser()
-  factorr <- as.factor(df[[1]])
-  model <- model.matrix( ~ factorr)
-  return(model)
+  if (length(var) == 1) {
+    factor1 <- as.factor(df[[1]])
+    model <- model.matrix(~ factor1)
+    return(model)
+  } else {
+    factor1 <- as.factor(df[[1]])
+    factor2 <- as.factor(df[[2]])
+    model <- model.matrix(~ factor1 + factor2)
+        return(model)
+  }
 }
 
-name <- quote(sample_information)
-var <- "SEX"
-
-factorr <- as.factor(sample_information[[1]])
-model <- model.matrix(~ factorr)
 
 
 
@@ -248,19 +250,19 @@ DE_edgeR_main <- function(countData,
                     df_r = countData)
   if (is.null(interac)) {
     
-    treatment =  as.formula(paste0("~ ", treatment))
+    treatment = c(treatment,interac)
     qlf <- DE_edgeR_design(countData = countData,
                     colData = colData,
                     treatment = treatment)
     
   } else if (interac == "None") {
-    treatment =  as.formula(paste0("~ ", treatment))
+    treatment =  treatment
     qlf <- DE_edgeR_design(countData = countData,
                            colData = colData,
                            treatment = treatment)
     
   } else {
-    treatment =  as.formula(paste0("~ ", treatment, "+ ", interac))
+    treatment =  c(treatment,interac)
     qlf <- DE_edgeR_design(countData = countData,
                            colData = colData,
                            treatment = treatment)
@@ -275,7 +277,7 @@ DE_edgeR_main <- function(countData,
 x <-  DE_edgeR_main(
   countData = raw_coutns,
   colData = sample_information,
-  interac = "None",
+  interac = "DIET",
   treatment = "SEX"
 )
 ```
