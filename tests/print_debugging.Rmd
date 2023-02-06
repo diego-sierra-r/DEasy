@@ -153,6 +153,9 @@ DE_DESeq2_main <- function(
 
 ```{r "DE with DESEQ2 main function examples"}
 
+sample_information <- read.csv("~/Documentos/R/my_pkgs/DEasy/tests/Samples_information.csv", row.names = 1)
+raw_coutns <- read.csv("~/Documentos/R/my_pkgs/DEasy/tests/ara_counts.csv", row.names = 1)
+
 dds <- DESeqDataSetFromMatrix(countData = cts,
                               colData = coldata,
                               design = ~ condition)
@@ -173,8 +176,7 @@ ix <- DE_DESeq2_main(
   interac = "None"
 )
 
-sample_information <- read.csv("~/Documentos/R/my_pkgs/DEasy/tests/Samples_information.csv", row.names = 1)
-raw_coutns <- read.csv("~/Documentos/R/my_pkgs/DEasy/tests/ara_counts.csv", row.names = 1)
+
 
 iix <- DE_DESeq2_main(countData = raw_coutns,
                       colData = sample_information,
@@ -206,11 +208,19 @@ qlf <- p.adjust(qlf$table$FDR, method = "BH")
 
 
 get_model <- function(df,var) {
-  name <- quote(df) |> as.character()
-  formula <- paste0("~", name,"$", as.character(var)) |> as.formula()
-  model <- model.matrix(formula)
+  browser()
+  factorr <- as.factor(df[[1]])
+  model <- model.matrix( ~ factorr)
   return(model)
 }
+
+name <- quote(sample_information)
+var <- "SEX"
+
+factorr <- as.factor(sample_information[[1]])
+model <- model.matrix(~ factorr)
+
+
 
 DE_edgeR_design <- function(countData,
                             colData,
@@ -225,7 +235,7 @@ DE_edgeR_design <- function(countData,
   y <- estimateDisp(y, design, robust = TRUE)
   fit <- glmQLFit(y, design)
   qlf <- glmQLFTest(fit, coef = 2)
-  qlf <- p.adjust(qlf$table$FDR, method = "BH")
+  qlf$table$FDR <- p.adjust(qlf$table$PValue, method = "BH")
   return(qlf)
 }
 
