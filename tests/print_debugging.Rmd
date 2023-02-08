@@ -192,9 +192,6 @@ iix <- DE_DESeq2_main(countData = raw_coutns,
 # edgeR
 ```{r "edgeR DE"}
 
-
-## edgeR DE_edgeR_main()
-
 # load and filtering
 dgList <- DGEList(counts = raw_coutns, genes = rownames(raw_coutns))
 y <- dgList
@@ -207,6 +204,23 @@ fit <- glmQLFit(y, design)
 qlf <- glmQLFTest(fit, coef = 2)
 qlf <- p.adjust(qlf$table$FDR, method = "BH")
 
+logcpm <- cpm(y, log=TRUE)
+x <- plotMDS(logcpm)
+sampleDist <- dist(t(x$distance.matrix.squared))
+sampleDistMatrix <- as.matrix( sampleDist ) # Create distance matrix
+mdsData <- data.frame(cmdscale(sampleDistMatrix))
+mdsData <- cbind(mdsData,sample_information)
+
+plot <-  ggplot(mdsData, aes(X1,X2,color=SEX)) +
+    geom_label_repel(aes(label = rownames(mdsData)), size = 3) +
+    geom_point(size=3) +
+    scale_color_manual(values =  c("#B22222","#8B008B"),
+                       labels = c("Female", "Male"),
+                       name = "Sex") +
+    labs(title = "edgeR",
+         x = "Dim 1",
+         y = "Dim 2") +
+    theme_classic2()
 
 get_model <- function(df, var) {
   if (length(var) == 1) {
@@ -313,8 +327,10 @@ x <-  DE_edgeR_main(
 MDS_plot <- function(countData,
                      colData,
                      treatment,
-                     interac = "None") {
-  
+                     interac = "None",
+                     pkg) {
+  if (pkg == "DESeq2") {
+    
   if (interac == "None") {
     design <- as.formula(paste0("~ ", treatment))
   } else if (is.null(interac)) {
@@ -322,6 +338,7 @@ MDS_plot <- function(countData,
   } else {
     design =  as.formula(paste0("~ ", treatment, "+ ", interac))
   }
+  
   dds <- DESeqDataSetFromMatrix(countData = as.matrix(countData),
                                 colData = colData,
                                 design = design)
@@ -344,6 +361,44 @@ MDS_plot <- function(countData,
   
   
   return(F_vr_M_DESeq2_MDS)
+  } else if (pkg == "edgeR") {
+    dgList <- DGEList(counts = countData, genes = rownames(countData))
+    y <- dgList
+    if (interac == "None") {
+      treatment = treatment
+    } else if (is.null(interac)) {
+      treatment = treatment
+    } else {
+      treatment = c(treatment,interac)
+    }
+    
+    design <- get_model(sample_information, treatment)
+    keep <- filterByExpr(y, design = design)
+    y <- y[keep, , keep.lib.sizes = FALSE]
+    y <- calcNormFactors(y) #
+    y <- estimateDisp(y, design, robust = TRUE)
+    logcpm <- cpm(y, log = TRUE)
+    x <- plotMDS(logcpm)
+    sampleDist <- dist(t(x$distance.matrix.squared))
+    sampleDistMatrix <- as.matrix(sampleDist) # Create distance matrix
+    mdsData <- data.frame(cmdscale(sampleDistMatrix))
+    mdsData <- cbind(mdsData, sample_information)
+    
+    plot <-  ggplot(mdsData, aes(X1, X2, color = SEX)) +
+      geom_label_repel(aes(label = rownames(mdsData)), size = 3) +
+      geom_point(size = 3) +
+      scale_color_manual(
+        values =  c("#B22222", "#8B008B"),
+        labels = c("Female", "Male"),
+        name = "Sex"
+      ) +
+      labs(title = "edgeR",
+           x = "Dim 1",
+           y = "Dim 2") +
+      theme_classic2()
+    return(plot)
+  
+    }
 }
 
 
