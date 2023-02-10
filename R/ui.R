@@ -56,7 +56,7 @@ shinyUI(fluidPage(
         tabPanel("Results",
                 column(12,
                        dataTableOutput("DE_results")),
-                       actionButton("downloadR","Download",
+                       downloadButton("downloadR","Download",
                                     icon = icon("download"),
                                     class = "btn-info")),
         tabPanel("Plots",
@@ -74,7 +74,7 @@ shinyUI(fluidPage(
                               )
                   
                 ),
-                actionButton("downloadP","Download",
+                downloadButton("downloadP","Download",
                              icon = icon("download"),
                              class = "btn-info")),
         tabPanel("Help",

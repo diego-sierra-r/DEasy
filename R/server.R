@@ -534,10 +534,7 @@ shinyServer(function(input, output) {
   
   
 
-  output$DE_results <- renderDataTable({
-    results_DE_DESeq2()
-  })
-  
+
   results <- eventReactive(input$run,{
     if (input$treatment == input$interaction) {
       validate("Treatment an interaction can't be the same")
@@ -568,9 +565,7 @@ shinyServer(function(input, output) {
     results()
   })
 
-  
-  
-  output$plot1 <- renderPlot({
+  plot1 <- eventReactive(input$run,{
     if (input$treatment == input$interaction) {
       validate("Treatment an interaction can't be the same")
     }
@@ -581,22 +576,28 @@ shinyServer(function(input, output) {
       interac = input$interaction
     )
   })
-  output$plot2 <- renderPlot({
+  
+  plot2 <- eventReactive(input$run,{
     if (input$treatment == input$interaction) {
       validate("Treatment an interaction can't be the same")
     }
     MA_plot(results()) 
   })
-  output$plot3 <- renderPlot({
+  
+  plot3 <- eventReactive(input$run,{
+    if (input$treatment == input$interaction) {
+      validate("Treatment an interaction can't be the same")
+    }
     ggheatmap(countData = raw_counts_data(),
               colData = sampleinfo_data(),
               treatment = input$treatment,
               interac = input$interaction,
               threshold = input$treshold,
               alpha = input$pvalue
-              )
-  }) 
-  output$plot4 <- renderPlot({
+    )
+  })
+  
+  plot4 <- eventReactive(input$run,{
     if (input$treatment == input$interaction) {
       validate("Treatment an interaction can't be the same")
     }
@@ -614,6 +615,33 @@ shinyServer(function(input, output) {
                     treatment = input$treatment,
                     interaction = input$interaction)
   })
+  
+  output$plot1 <- renderPlot({
+    plot1()
+  })
+
+  output$plot2 <- renderPlot({
+    plot2()
+  })
+  
+  output$plot3 <- renderPlot({
+    plot3()
+  }) 
+  output$plot4 <- renderPlot({
+    plot4()
+  })
+  
+  output$downloadR <- downloadHandler(
+    filename  = function() {
+      paste0("Results_", input$pgk, ".csv")
+    },
+    content =  function(file) {
+      write.csv(results(), file)
+    }
+  )
+  
+  
+  
   output$readme <- renderUI({
     tags$div(includeHTML("~/Documentos/R/my_pkgs/DEasy/README.html"))
   })    
