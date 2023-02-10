@@ -64,9 +64,9 @@ MDS_plot <- function(countData,
     geom_label_repel(aes(label = rownames(mds)), size = 3) +
     geom_point(size=3) +
     scale_color_manual(values =  c("#B22222","#8B008B"),
-                       labels = c("Female", "Male"),
+                       labels = c("Female", "Male"), 
                        name = "Sex") +
-    labs(title = "Females vr Males DESeq2",
+    labs(title = "DESeq2",
          x = "Dim 1",
          y = "Dim 2") +
     theme_classic2()
@@ -75,20 +75,38 @@ MDS_plot <- function(countData,
 
 ## MA-plot function 
 
+
 MA_plot  <- function(df) {
-  plot <- ggplot(data = df, 
-                 aes(x = log2(baseMean),
-                     y = log2FoldChange, 
-                     color = Difference))  +
-    geom_point(alpha = 0.75) +
-    #        geom_hex(bins = 30) +
-    labs(color = "Differentially expressed",
-         fill = "Number of transcripts")+ 
-    xlab("Log2 Base-mean")+ ylab("log2 Fold-change")+
-    theme_classic2() +
-    coord_flip()
-  
-  return(plot)
+  if (length(colnames(df)) == 7) {
+    plot <- ggplot(data = df, 
+                   aes(x = log2(baseMean),
+                       y = log2FoldChange, 
+                       color = Difference))  +
+      geom_point(alpha = 0.75) +
+      #        geom_hex(bins = 30) +
+      labs(color = "Differentially expressed",
+           fill = "Number of transcripts")+ 
+      xlab("Log2 Base-mean")+ ylab("log2 Fold-change")+
+      theme_classic2() +
+      coord_flip() +
+      ggtitle("DESeq2")
+    
+    return(plot)
+  } else if (length(colnames(df)) == 6) {
+    plot <- ggplot(data = df, 
+                   aes(x = logCPM,
+                       y = logFC, 
+                       color = Difference))  +
+      geom_point(alpha = 0.75) +
+      #        geom_hex(bins = 30) +
+      labs(color = "Differentially expressed",
+           fill = "Number of transcripts")+ 
+      xlab("Log2 Base-mean")+ ylab("log2 Fold-change")+
+      theme_classic2() +
+      coord_flip() +
+      ggtitle("edgeR")
+    return(plot)
+  }
 }
 
 # single_GenID_plot

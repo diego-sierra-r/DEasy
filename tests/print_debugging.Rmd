@@ -588,7 +588,8 @@ grid.draw(finalGrob)
 ```{r}
 
 MA_plot  <- function(df) {
-  plot <- ggplot(data = df, 
+  if (length(colnames(df)) == 7) {
+      plot <- ggplot(data = df, 
                  aes(x = log2(baseMean),
                      y = log2FoldChange, 
                      color = Difference))  +
@@ -598,9 +599,25 @@ MA_plot  <- function(df) {
              fill = "Number of transcripts")+ 
   xlab("Log2 Base-mean")+ ylab("log2 Fold-change")+
         theme_classic2() +
-        coord_flip()
+        coord_flip() +
+        ggtitle("DESeq2")
 
   return(plot)
+  } else if (length(colnames(df)) == 6) {
+          plot <- ggplot(data = df, 
+                 aes(x = logcpm,
+                     y = logFC, 
+                     color = Difference))  +
+    geom_point(alpha = 0.75) +
+#        geom_hex(bins = 30) +
+        labs(color = "Differentially expressed",
+             fill = "Number of transcripts")+ 
+  xlab("Log2 Base-mean")+ ylab("log2 Fold-change")+
+        theme_classic2() +
+        coord_flip() +
+            ggtitle("edgeR")
+  return(plot)
+  }
 }
 
 ```
