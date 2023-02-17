@@ -16,6 +16,7 @@ library(gtable)
 library(grid)
 library(magrittr)
 library(glue)
+library(waiter)
 
 options(shiny.maxRequestSize = 100 *
           1024^2)
@@ -518,26 +519,14 @@ shinyServer(function(input, output) {
     )
   })
   
-  results_DE_edgeR <- eventReactive(input$run,{
-    if (input$treatment == input$interaction) {
-      validate("Treatment an interaction can't be the same")
-    }
-    
-    DE_edgeR_main(
-      countData = raw_counts_data(),
-      colData = sampleinfo_data(),
-      treatment = input$treatment,
-      interac = input$interaction,
-      alpha = input$pvalue,
-      threshold = input$treshold
-    )
-  })
+
   ## I have to conect the selectInput and add a conditional to choose between DEseq2 and edgeR
   
   
 
 
   results <- eventReactive(input$run,{
+    showNotification("Processing...",type = "message")
     if (input$treatment == input$interaction) {
       validate("Treatment an interaction can't be the same")
     }
