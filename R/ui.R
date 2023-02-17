@@ -1,5 +1,6 @@
 library(shiny)
 library(RColorBrewer)
+library(waiter)
 
 
 
@@ -60,6 +61,7 @@ shinyUI(fluidPage(
                                     icon = icon("download"),
                                     class = "btn-info")),
         tabPanel("Plots",
+                 
                 column(6,
                   plotOutput("plot1"),
                   

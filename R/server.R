@@ -526,30 +526,35 @@ shinyServer(function(input, output) {
 
 
   results <- eventReactive(input$run,{
-    showNotification("Processing...",type = "message")
-    if (input$treatment == input$interaction) {
-      validate("Treatment an interaction can't be the same")
-    }
-    
-    if (input$pgk == "DESeq2") {
-      DE_DESeq2_main(
-        countData = raw_counts_data(),
-        colData = sampleinfo_data(),
-        treatment = input$treatment,
-        interac = input$interaction,
-        alpha = input$pvalue,
-        threshold = input$treshold
-      )
-    }else if (input$pgk == "edgeR") {
-      DE_edgeR_main(
-        countData = raw_counts_data(),
-        colData = sampleinfo_data(),
-        treatment = input$treatment,
-        interac = input$interaction,
-        threshold = input$treshold,
-        alpha = input$pvalue
-      )
-    }
+    withProgress(message = "Processing...", {
+      if (input$treatment == input$interaction) {
+        validate("Treatment an interaction can't be the same")
+      }
+      incProgress(1/8)
+      if (input$pgk == "DESeq2") {
+        incProgress(1/7)
+        DE_DESeq2_main(
+          countData = raw_counts_data(),
+          colData = sampleinfo_data(),
+          treatment = input$treatment,
+          interac = input$interaction,
+          alpha = input$pvalue,
+          threshold = input$treshold
+        )
+      }else if (input$pgk == "edgeR") {
+        incProgress(1/7)
+        DE_edgeR_main(
+          countData = raw_counts_data(),
+          colData = sampleinfo_data(),
+          treatment = input$treatment,
+          interac = input$interaction,
+          threshold = input$treshold,
+          alpha = input$pvalue
+        )
+      }
+      
+    })
+
   })
   
   output$DE_results <- renderDataTable({
@@ -557,6 +562,7 @@ shinyServer(function(input, output) {
   })
 
   plot1 <- eventReactive(input$run,{
+
     if (input$treatment == input$interaction) {
       validate("Treatment an interaction can't be the same")
     }
