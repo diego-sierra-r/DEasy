@@ -14,6 +14,8 @@ library(ggdendro)
 library(gridExtra)
 library(gtable)
 library(grid)
+library(magrittr)
+library(glue)
 
 options(shiny.maxRequestSize = 100 *
           1024^2)
@@ -597,7 +599,7 @@ shinyServer(function(input, output) {
     )
   })
   
-  plot4 <- eventReactive(input$run,{
+  plot4 <- eventReactive(input$geneID,{
     if (input$treatment == input$interaction) {
       validate("Treatment an interaction can't be the same")
     }
@@ -639,7 +641,32 @@ shinyServer(function(input, output) {
       write.csv(results(), file)
     }
   )
-  
+
+
+  output$downloadP1 <- downloadHandler(
+    filename = function(){paste("plot_01",'.png',sep='')},
+    content = function(file){
+      ggsave(file,plot=plot1())
+    }
+  )
+  output$downloadP2 <- downloadHandler(
+    filename = function(){paste("plot_02",'.png',sep='')},
+    content = function(file){
+      ggsave(file,plot=plot2())
+    }
+  )
+  output$downloadP3 <- downloadHandler(
+    filename = function(){paste("plot_03",'.png',sep='')},
+    content = function(file){
+      ggsave(file,plot=plot3())
+    }
+  )
+  output$downloadP4 <- downloadHandler(
+    filename = function(){paste("plot_04",'.png',sep='')},
+    content = function(file){
+      ggsave(file, plot=plot4())
+    }
+  )
   
   
   output$readme <- renderUI({

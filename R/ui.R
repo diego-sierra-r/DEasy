@@ -62,21 +62,31 @@ shinyUI(fluidPage(
         tabPanel("Plots",
                 column(6,
                   plotOutput("plot1"),
-                  plotOutput("plot2")
+                  
+                  downloadButton("downloadP1","Download",
+                                 icon = icon("download"),
+                                 class = "btn-info"),
+                  plotOutput("plot2"),
+                  downloadButton("downloadP2","Download",
+                                 icon = icon("download"),
+                                 class = "btn-info")
                   ),
                 column(6,
                   plotOutput("plot3"),
+                  downloadButton("downloadP3","Download",
+                                 icon = icon("download"),
+                                 class = "btn-info"),
                   plotOutput("plot4"),
                   textInput(inputId = "geneID",
                             label =  "gene ID",width = "400px",
                             placeholder = "Write a geneID from raw counts",
                             value = NULL
-                              )
+                              ),
+                  downloadButton("downloadP4","Download",
+                                 icon = icon("download"),
+                                 class = "btn-info")
                   
-                ),
-                downloadButton("downloadP","Download",
-                             icon = icon("download"),
-                             class = "btn-info")),
+                )),
         tabPanel("Help",
                  column(11,
                         htmlOutput(outputId = "readme")
