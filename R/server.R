@@ -581,18 +581,7 @@ shinyServer(function(input, output) {
     MA_plot(results()) 
   })
   
-  plot3 <- eventReactive(input$run,{
-    if (input$treatment == input$interaction) {
-      validate("Treatment an interaction can't be the same")
-    }
-    ggheatmap(countData = raw_counts_data(),
-              colData = sampleinfo_data(),
-              treatment = input$treatment,
-              interac = input$interaction,
-              threshold = input$treshold,
-              alpha = input$pvalue
-    )
-  })
+  plot3 <- NULL
   
   plot4 <- eventReactive(input$geneID,{
     if (input$treatment == input$interaction) {
