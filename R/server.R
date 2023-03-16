@@ -508,8 +508,22 @@ shinyServer(function(input, output) {
 
   })
   
-  output$DE_results <- renderDataTable({
-    results()
+  output$DE_results <- DT::renderDataTable({
+    DT::datatable(results(),
+                  rownames = TRUE,
+                  options = list(
+                    order = list(list(1, 'asc')),
+                    columnDefs = list(list(targets = '_all', width = "2px")),
+                    columns.type = "num",
+                    scrollCollapse = TRUE,
+                    searching = FALSE,
+                    lengthChange = TRUE,
+                    ordering = FALSE,
+                    paging = TRUE,
+                    pageLength = 20,
+                    scrollX = "200px",
+                    scrollY = "530px")
+                  )
   })
 
   plot1 <- eventReactive(input$run,{

@@ -56,7 +56,7 @@ shinyUI(fluidPage(
                                       DT::DTOutput("raw_counts"))),
         tabPanel("Results",
                 column(12,
-                       dataTableOutput("DE_results")),
+                       DT::DTOutput("DE_results")),
                        downloadButton("downloadR","Download",
                                     icon = icon("download"),
                                     class = "btn-info")),
