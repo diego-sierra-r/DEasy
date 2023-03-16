@@ -151,82 +151,33 @@ single_gen_plot <- function(geneID, countData, ColData, treatment, interaction =
 
 ## heatmap plot 
 
-ggheatmap <- function(countData,
-                      colData,
-                      treatment,
-                      interac,
-                      threshold,
-                      alpha
-) {
-  if (interac == "None") {
-    design <- as.formula(paste0("~ ", treatment))
-  } else if (is.null(interac)) {
-    design <- as.formula(paste0("~ ", treatment))
-  } else {
-    design =  as.formula(paste0("~ ", treatment, "+ ", interac))
-  }
-  deseq2Data <- DESeqDataSetFromMatrix(countData = as.matrix(countData),
-                                       colData = colData,
-                                       design = design)
-  deseq2Data <- DESeq(deseq2Data)
-  deseq2Results <- results(deseq2Data)
-  deseq2ResDF <- as.data.frame(deseq2Results)
+heatmap <- function(CountData, ColData, results_DE, treatment) {
+  raw_coutns_heat <- CountData
+  raw_coutns_heat$ID <- rownames(CountData)
   
-  deseq2Data <- deseq2Data[rowSums(counts(deseq2Data)) > 10, ]
-  deseq2VST <- vst(deseq2Data)
-  deseq2VST <- assay(deseq2VST)
-  deseq2VST <- as.data.frame(deseq2VST)
-  deseq2VST$Gene <- rownames(deseq2VST)
-  head(deseq2VST)
+  DE_filtered_deseq <-
+    dplyr::filter(results_DE, Difference != "Not significant")
+  DE_filtered_deseq$ID <- row.names(DE_filtered_deseq)
+  index <- raw_coutns_heat$ID %in% DE_filtered_deseq$ID
+  raw_coutns_heat[index, ]
+  raw_coutns_heat$ID <- NULL
+  raw_coutns_heat <-  scale(raw_coutns_heat)
   
-  sigGenes <-
-    rownames(deseq2ResDF[deseq2ResDF$padj <= as.numeric(alpha) &
-                           abs(deseq2ResDF$log2FoldChange) > as.numeric(threshold), ])
-  deseq2VST <- deseq2VST[deseq2VST$Gene %in% sigGenes,]
-  deseq2VST <- melt(deseq2VST, id.vars=c("Gene"))
+  annotation_col = data.frame(treatment = treatment)
+  rownames(annotation_col) = colnames(CountData)
   
-  
-  heatmap <- ggplot(deseq2VST, 
-                    aes(x=variable, y=Gene, fill=value)) +
-    geom_raster() + scale_fill_viridis(trans="sqrt") + 
-    theme(axis.text.x=element_text(angle=65, hjust=1),
-          axis.text.y=element_blank(),
-          axis.ticks.y=element_blank()) +
-    labs(title = NULL,
-         y = "Gene",
-         x = NULL)
-  
-  deseq2VSTMatrix <- dcast(deseq2VST, Gene ~ variable)
-  rownames(deseq2VSTMatrix) <- deseq2VSTMatrix$Gene
-  deseq2VSTMatrix$Gene <- NULL
-  distanceGene <- dist(deseq2VSTMatrix)
-  distanceSample <- dist(t(deseq2VSTMatrix))
-  clusterGene <- hclust(distanceGene, method="average")
-  clusterSample <- hclust(distanceSample, method="average")
-  sampleModel <- as.dendrogram(clusterSample)
-  sampleDendrogramData <- segment(dendro_data(sampleModel, type = "rectangle"))
-  sampleDendrogram <- ggplot(sampleDendrogramData) + geom_segment(aes(x = x, y = y, xend = xend, yend = yend)) + theme_dendro()
-  deseq2VST$variable <- factor(deseq2VST$variable, levels=clusterSample$labels[clusterSample$order])
-  
-  heatmap <- ggplot(deseq2VST, aes(x=variable, y=Gene, fill=value)) + geom_raster() + scale_fill_viridis(trans="sqrt") + theme(axis.text.x=element_text(angle=65, hjust=1), axis.text.y=element_blank(), axis.ticks.y=element_blank())
-  heatmap
-  grid.arrange(sampleDendrogram, heatmap, ncol=1, heights=c(1,5))
-  
-  sampleDendrogram_1 <- sampleDendrogram + scale_x_continuous(expand=c(.0085, .0085)) + scale_y_continuous(expand=c(0, 0))
-  heatmap_1 <- heatmap + scale_x_discrete(expand=c(0, 0)) + scale_y_discrete(expand=c(0, 0))
-  sampleDendrogramGrob <- ggplotGrob(sampleDendrogram_1)
-  heatmapGrob <- ggplotGrob(heatmap_1)
-  sampleDendrogramGrob <- gtable_add_cols(sampleDendrogramGrob, heatmapGrob$widths[7], 6)
-  sampleDendrogramGrob <- gtable_add_cols(sampleDendrogramGrob, heatmapGrob$widths[8], 7)
-  maxWidth <- unit.pmax(sampleDendrogramGrob$widths, heatmapGrob$widths)
-  sampleDendrogramGrob$widths <- as.list(maxWidth)
-  heatmapGrob$widths <- as.list(maxWidth)
-  
-  heatmap_1 <- heatmap + scale_x_discrete(expand=c(0, 0)) + scale_y_discrete(expand=c(0, 0))
-  finalGrob <- arrangeGrob(sampleDendrogramGrob, heatmapGrob, ncol=1, heights=c(2,5))
-  grid.draw(finalGrob)
-  return(grid.draw(finalGrob))
-
+  p <- pheatmap::pheatmap(
+    dist(t(raw_coutns_heat)),
+    show_rownames = FALSE,
+    show_colnames = FALSE,
+    annotation_col = annotation_col,
+    scale = "none",
+    clustering_method = "ward.D2",
+    clustering_distance_cols = "euclidean",
+    width = 15,
+    height = 15
+  )
+  return(p)
 }
 
 # create funtions for DE with edgeR
@@ -581,7 +532,16 @@ shinyServer(function(input, output) {
     MA_plot(results()) 
   })
   
-  plot3 <- NULL
+  plot3 <- eventReactive(input$run,{
+    browser()
+    if (input$treatment == input$interaction) {
+      validate("Treatment an interaction can't be the same")
+    }
+    heatmap(CountData = raw_counts_data(),
+            ColData = sampleinfo_data(),
+            results_DE = results(),
+            treatment = sampleinfo_data()[input$treatment]) 
+  })
   
   plot4 <- eventReactive(input$geneID,{
     if (input$treatment == input$interaction) {

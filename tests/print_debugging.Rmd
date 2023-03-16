@@ -625,42 +625,37 @@ MA_plot  <- function(df) {
 #PCA
 
 ```{r}
-expFile=system.file("extdata","leukemiaExpressionSubset.rds",
-package="compGenomRData")
-mat=readRDS(expFile)
-mat
-
-annotation_col = data.frame(
-  LeukemiaType =substr(colnames(mat),1,3))
-annotation_col
-rownames(annotation_col)= colnames(mat)
-annotation_col
-library(pheatmap)
-
-pheatmap(mat,show_rownames=FALSE,show_colnames=FALSE,
-         annotation_col=annotation_col,
-         scale = "none",clustering_method="ward.D2",
-         clustering_distance_cols="euclidean")
-
 ###
+heatmap <- function(CountData, ColData, results_DE) {
+  raw_coutns_heat <- CountData
+  raw_coutns_heat$ID <- rownames(raw_coutns)
+  
+  DE_filtered_deseq <-
+    dplyr::filter(results_DE, Difference != "Not significant")
+  DE_filtered_deseq$ID <- row.names(DE_filtered_deseq)
+  index <- raw_coutns_heat$ID %in% DE_filtered_deseq$ID
+  raw_coutns_heat[index, ]
+  raw_coutns_heat$ID <- NULL
+  raw_coutns_heat <-  scale(raw_coutns_heat)
+  
+  annotation_col = data.frame(treatment = ColData$SEX)
+  rownames(annotation_col) = colnames(raw_coutns)
+  
+  p <- pheatmap::pheatmap(
+    dist(t(raw_coutns_heat)),
+    show_rownames = FALSE,
+    show_colnames = FALSE,
+    annotation_col = annotation_col,
+    scale = "none",
+    clustering_method = "ward.D2",
+    clustering_distance_cols = "euclidean",
+    width = 15,
+    height = 15,
+  )
+  return(p)
+}
 
-raw_coutns
-
-DE_filtered_deseq <- dplyr::filter(iix, Difference != "Not significant")
-DE_filtered_deseq
-annotation_col = data.frame(
-  LeukemiaType =substr(colnames(raw_coutns),8,10))
-
-annotation_col
-rownames(annotation_col)= colnames(raw_coutns)
-annotation_col
-library(pheatmap)
-
-pheatmap(raw_coutns[1:10000,],show_rownames=FALSE,show_colnames=FALSE,
-         annotation_col = annotation_col,
-         scale = "none",clustering_method="ward.D2",
-         clustering_distance_cols="euclidean",width = 15,height = 15)
-
+heatmap(CountData = raw_coutns,ColData = sample_information,results_DE = iix)
 ```
 
 
