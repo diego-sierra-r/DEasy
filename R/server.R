@@ -18,7 +18,7 @@ library(magrittr)
 library(glue)
 library(waiter)
 
-options(shiny.maxRequestSize = 100 *
+options(shiny.maxRequestSize = 500 *
           1024^2)
 
 # define colors needed to customize tables
@@ -378,6 +378,8 @@ shinyServer(function(input, output) {
   # load main input data
   raw_counts_data <- reactive({
     req(input$raw_counts)
+    
+    
     file <- read.csv(input$raw_counts$datapath, row.names = 1)
   })
   sampleinfo_data <- reactive({
