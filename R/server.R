@@ -380,11 +380,10 @@ shinyServer(function(input, output) {
     req(input$raw_counts)
     ext <- tools::file_ext(input$raw_counts$name)
     file <- switch (ext,
-      csv = vroom::vroom(input$raw_counts$datapath, delim = ","),
-      tsv = vroom::vroom(input$raw_counts$datapath, delim = "\t"),
+      csv = read.csv(input$raw_counts$datapath, sep = ",",row.names = 1),
       xlsx = openxlsx::read.xlsx(xlsxFile = input$raw_counts$datapath,
                                  sheet = 1,rowNames = TRUE),
-      validate("Invalid file; Please upload a .csv, .tsv, or .xlsx file")
+      validate("Invalid file; Please upload a .csv, or .xlsx file")
     )
     
     #file <- read.csv(input$raw_counts$datapath, row.names = 1)
@@ -394,19 +393,18 @@ shinyServer(function(input, output) {
     ext <- tools::file_ext(input$sampleinfo$name)
   
     file2 <-  switch (ext,
-      csv = vroom::vroom(input$sampleinfo$datapath, delim = ","),
-      tsv = vroom::vroom(input$sampleinfo$datapath, delim = "\t"),
+      csv = read.csv(input$sampleinfo$datapath, sep = ",",row.names = 1),
       xlsx = openxlsx::read.xlsx(
         xlsxFile = input$sampleinfo$datapath,
         sheet = 1,
         rowNames = TRUE
       ),
-      validate("Invalid file; Please upload a .csv, .tsv, .xlsx file")
+      validate("Invalid file; Please upload a .csv or .xlsx file")
     )
   })
   treatment_choose <- reactive({
     req(input$sampleinfo)
-    file2 <- read.csv(input$sampleinfo$datapath)
+    file2 <- sampleinfo_data()
     column <- file2[[input$treatment]] %>%  as.factor()
   }) 
   interection_choose <- reactive({
