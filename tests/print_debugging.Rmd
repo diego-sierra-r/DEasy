@@ -40,8 +40,6 @@ library(grid)
 #                   "#48D1CC","#5F9EA0","#87CEFA	")
 #  sample(list_colors,(2+2),replace = TRUE,)
 #  
-#  rmarkdown::render("~/Documentos/R/my_pkgs/DEasy/README.Rmd",output_format = "html_document")
-#  rmarkdown::render("~/Documentos/R/my_pkgs/DEasy/README.Rmd",output_format = "github_document")
 ```
 
 ```{r "import data example form package"}

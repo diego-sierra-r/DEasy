@@ -1,2 +1,2 @@
 options(shiny.autoreload = TRUE)
-shiny::runApp()
+shiny::runApp("R/app.R")
