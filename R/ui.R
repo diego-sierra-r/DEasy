@@ -5,7 +5,7 @@ library(waiter)
 
 
 # Define UI for application that draws a histogram
-shinyUI(fluidPage(
+ui <- shinyUI(fluidPage(
   
   titlePanel(title = "DEasy", windowTitle = "DEasy!"),
   sidebarLayout(

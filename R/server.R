@@ -62,8 +62,9 @@ MDS_plot <- function(countData,
   sampleDistMatrix <- as.matrix( sampleDists ) # Create distance matrix
   mdsData <- data.frame(cmdscale(sampleDistMatrix)) #perform MDS
   mds <- cbind(mdsData, as.data.frame(colData(vsd_0)))
+  colors =  renderText({rv()})
   
-  F_vr_M_DESeq2_MDS <-  ggplot(mds, aes(X1,X2,color=SEX)) +
+  F_vr_M_DESeq2_MDS <-  ggplot(mds, aes(X1,X2, color = SEX)) +
     geom_label_repel(aes(label = rownames(mds)), size = 3) +
     geom_point(size=3) +
     scale_color_manual(values =  c("#B22222","#8B008B"),
@@ -356,7 +357,8 @@ DE_DESeq2_main <- function(
 
 
 # Define server logic required to draw a histogram
-shinyServer(function(input, output) {
+
+server <- shinyServer(function(input, output) {
   #circular reference between sampleinfo and treatment select input
   observeEvent(input$sampleinfo,
                if (!is.null(input$sampleinfo$name)) {
@@ -412,6 +414,15 @@ shinyServer(function(input, output) {
     file2 <- read.csv(input$sampleinfo$datapath)
     column <- file2[[input$interaction]] %>%  as.factor()
   })
+
+  # reactive values (treatment choosen)
+  rv <- reactiveVal(NULL)
+  observeEvent(input$treatment, {
+     rv(input$treatment)
+  })
+  
+  rv_catched <- renderText({rv()})
+  
 
   # Define outputs
   treatment_DT <- reactive(
