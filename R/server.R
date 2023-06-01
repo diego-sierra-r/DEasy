@@ -9,8 +9,6 @@ library(ggpubr)
 library(ggrepel)
 library(rlang)
 library(reshape2)
-library(viridis)
-library(ggdendro)
 library(gridExtra)
 library(gtable)
 library(grid)
@@ -652,7 +650,6 @@ server <- shinyServer(function(input, output) {
   })
 
   plot3 <- eventReactive(input$run, {
-    browser()
     if (input$treatment == input$interaction) {
       validate("Treatment an interaction can't be the same")
     }
