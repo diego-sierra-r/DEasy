@@ -11,4 +11,9 @@ Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.2.3
 Suggests: 
     testthat (>= 3.0.0)
+    rlang (>= 1.1.0)
+    DESeq2
+    edgeR
+    shiny
+    BiocManager
 Config/testthat/edition: 3
