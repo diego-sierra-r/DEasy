@@ -1,10 +1,6 @@
----
----
-
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 ```
-
 
 ## DEasy!
 
@@ -21,14 +17,27 @@ library(devtools)
 install_github("diego-sierra-r/DEasy")
 ```
 
-Then you can use this shinyapp/package in a R session:
-- TODO  imagen ####
+Then you can use this shinyapp/package in a R session: - TODO imagen \####
 
 ### Using a Web browser
 
-![](images/samples_01.JPG)
-![](images/Counts_01.JPG)
-...
+
+
+![](images/samples_01.JPG) 
+
+![](images/Counts_01.JPG) 
+
+![](images/app_01.png)
+![](images/app_02.png)
+
+![](images/app_03.png)
+
+
+
+
+
+
+
 
 
 
