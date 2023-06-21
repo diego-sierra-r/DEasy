@@ -10,7 +10,7 @@ ui <- shinyUI(fluidPage(
   sidebarLayout(
     sidebarPanel(
       titlePanel("Upload files"),
-      fileInput(inputId = "sampleinfo", label = "Sample imformation", ),
+      fileInput(inputId = "sampleinfo", label = "Sample information", ),
       fileInput(inputId = "raw_counts", label = "Raw counts"),
       titlePanel("Parameters"),
       selectInput(
