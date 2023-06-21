@@ -15,6 +15,7 @@ library(grid)
 library(magrittr)
 library(glue)
 library(waiter)
+library(statmod)
 
 options(shiny.maxRequestSize = 500 *
   1024^2)
