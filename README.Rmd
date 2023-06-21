@@ -21,25 +21,47 @@ Then you can use this shinyapp/package in a R session: - TODO imagen \####
 
 ### Using a Web browser
 
+You can access to DEasy using web browser for free, this is useful if you want to use the app without using R, but essentially the performance its the same. in any case, firts you have prepare the data:
 
+To make a dirential gene expresion analisis is requieresd having a set of samples and two grups to compare. This is the **Sample information file**. Take on mind the next advices:
 
-![](images/samples_01.JPG) 
+-   DEasy can take .xslx, .csv and . tsv files
 
-![](images/Counts_01.JPG) 
+```{=html}
+<!-- -->
+```
+-   The first column have to contain all your samples
 
-![](images/app_01.png)
-![](images/app_02.png)
+-   All columns must have the same length.
+
+-   The second and third (optional) columns must contain the groups that are going to be compared.
+
+-   The column names should not start with symbols
+
+The next table shows an example where the 20 samples belong to two main groups according to their biological sex:
+
+![](images/samples_01.JPG)
+
+The second table required to perform differential expression analysis is the **Raw counts file** a database with all the transcripts of genes that where found on each one of the samples, take on mind these advises:
+
+-   DEasy can take .xslx, .csv and . tsv files
+
+-   The first column must contain all the gene or transcript names
+
+-   The number of samples must be equal to the number of samples on your **Sample information file**
+
+-   The counts must the raw counts, DEasy use specific normalizing method according to the package chosen internally.
+
+-   All columns must have the same length.
+
+## Explicar la Normalizacion interna que hacen los paquetes 
+
+![](images/Counts_01.JPG)
+
+![](images/app_01.png) ![](images/app_02.png)
 
 ![](images/app_03.png)
 
+![](images/app_04.png) ![](images/app_5.png)
 
-
-
-
-
-
-
-
-
-
-
+![](images/app_06.png) ![](images/app_07.png)
