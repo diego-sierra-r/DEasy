@@ -68,22 +68,24 @@ MDS_plot <- function(countData,
   colors <- renderText({
     rv()
   })
+  
+  #TODo  hacer bien el MDS con edgeR, solo estas cambiandole el titutulo pero sigue siendo un MDS de DESeq2###
 
-  F_vr_M_DESeq2_MDS <- ggplot(mds, aes(X1, X2, color = SEX)) +
-    geom_label_repel(aes(label = rownames(mds)), size = 3) +
-    geom_point(size = 3) +
-    scale_color_manual(
-      values = c("#B22222", "#8B008B"),
-      labels = c("Female", "Male"),
-      name = "Sex"
-    ) +
-    labs(
-      title = "DESeq2",
-      x = "Dim 1",
-      y = "Dim 2"
-    ) +
-    theme_classic2()
-  return(F_vr_M_DESeq2_MDS)
+    F_vr_M_DESeq2_MDS <- ggplot(mds, aes(X1, X2, color = SEX)) +
+      geom_label_repel(aes(label = rownames(mds)), size = 3) +
+      geom_point(size = 3) +
+      scale_color_manual(
+        values = c("#B22222", "#8B008B"),
+        labels = c("Female", "Male"),
+        name = "Sex"
+      ) +
+      labs(
+        title = "DESeq2",
+        x = "Dim 1",
+        y = "Dim 2"
+      ) +
+      theme_classic2()
+    return(F_vr_M_DESeq2_MDS)
 }
 
 ## MA-plot function
