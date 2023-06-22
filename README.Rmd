@@ -10,7 +10,7 @@ This is a shiny app created to make Differential gene expression (DGE) analyses 
 
 ### Using R
 
-If you want to run ~DEasy~ directly on you computer you can downland it from github
+If you want to run ~DEasy~ directly on you computer you can download it from github
 
 ```{r eval=FALSE}
 library(devtools)
@@ -21,15 +21,16 @@ Then you can use this shinyapp/package in a R session: - TODO imagen \####
 
 ### Using a Web browser
 
-You can access to DEasy using web browser for free, this is useful if you want to use the app without using R, but essentially the performance its the same. in any case, firts you have prepare the data:
+#### Preparing the data
 
-To make a dirential gene expresion analisis is requieresd having a set of samples and two grups to compare. This is the **Sample information file**. Take on mind the next advices:
+You can access to ~DEasy~ using web browser for free, this is useful if you want to use the app without using R, but essentially the performance its the same. in any case, firts you have prepare the data:
 
--   DEasy can take .xslx, .csv and . tsv files
+To make a differential gene expression analysis is required having a set of samples and two groups to compare. This is the **Sample information file**. Take on mind the next advice:
 
-```{=html}
+-   ~DEasy~ can take .xslx, .csv and . tsv files
+
 <!-- -->
-```
+
 -   The first column have to contain all your samples
 
 -   All columns must have the same length.
@@ -50,15 +51,30 @@ The second table required to perform differential expression analysis is the **R
 
 -   The number of samples must be equal to the number of samples on your **Sample information file**
 
--   The counts must the raw counts, DEasy use specific normalizing method according to the package chosen internally.
+-   The ID related to each of the samples must be the same between **Sample information** file and this **Raw counts file**
+
+-   The counts must the raw counts, ~DEasy~ use specific normalizing method according to the package chosen internally (`DEseq2` or `edgeR` ).
 
 -   All columns must have the same length.
 
-## Explicar la Normalizacion interna que hacen los paquetes 
+The next table show the head of a **Raw counts file**
 
 ![](images/Counts_01.JPG)
 
-![](images/app_01.png) ![](images/app_02.png)
+#### The panels
+
+\~DEasy\~ have sidebar panel where you can upload the **Raw counts file** and **Sample information file**. you can upload just *xlsx, tsv* or *csv* files. This app can deal with files with a maximum size of 500MB.
+
+![](images/app_01.png)
+Once you provide the file with the correct format you can review your data on the preview tab panel, by default \~DEasy\~ take the second column as the group (Treatments) that are going to be compared.
+
+![](images/app_02.png)
+
+The next section are the parameters, you can select `DESeq2` or `edge2`, to performance the analysis, if you hava a second group ont your sample information file you want to test the interacion between treatment, for example ~SEX + DIET you can select add that interacion, by default ~Deasy~ chose "none" interaction, in wother word It just considerate the the first treatment.
+
+
+ 
+## Explicar la Normalizacion interna que hacen los paquetes
 
 ![](images/app_03.png)
 
