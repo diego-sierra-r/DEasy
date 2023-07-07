@@ -75,7 +75,7 @@ The next section are the parameters, you can select `DESeq2` or `edge2`, to perf
 
 ![](images/app_03.png)
 
-Then you can set an alfa value (p-value) to ... and a threshold..., once you have defined the parameters you have to clink on the **Run** button and go tho **Results** tab to watch the results, this process usually take some minutes so you have time to go for a coffee. ones the the results main table is ready you can explore the pages. and look for significance difference on each transcript, or you can download the table and use other tools like Microsoft Excel to explore the data.
+Then you can set an alfa value (p-value) to ... and a threshold..., once you have defined the parameters you have to clink on the **Run** button and go the **Results** tab to watch the results, this process usually take some minutes so you have time to go for a coffee. ones the the results main table is ready you can explore the pages. and look for significance difference on each transcript, or you can download the table and use other tools like Microsoft Excel to explore the data.
 
 ![](images/app_04.png)
 
@@ -83,6 +83,16 @@ A progressing bar should appear indicating the progress.
 
 ![](images/app_5.png)
 
-The last component on this app is the **Plot** tab section, the first plor its a Multidimentional scaling plot ...
+The last component on this app is the **Plot** tab section, the first plot its a Multidimentional scaling plot ...
 
-![](images/app_06.png) ![](images/app_07.png)
+The second plot its a heatmap (UPGMA?...) that shows you how similar some samples according their differential gene expression.
+
+The third plot it's a MA-plot where you can visualizar how much differential gen expressed genes are between your treatments, and their proportion agains the number of genes who are not considered differentialy expressed.
+
+![](images/app_06.png)
+
+Once you have found an interesting gene or transcript you can use the last tool on the left bottom corner to generate a basic plot where you can can vizualize differences on a specific gene.
+
+![](images/app_07.png)
+
+That's how `DEasy` can help you to explore and analyze datafrom Differential gene expression experiments, I hope you can find it useful 😀.
