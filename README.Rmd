@@ -1,3 +1,7 @@
+---
+---
+---
+
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 ```
@@ -27,7 +31,7 @@ You can access to ~DEasy~ using web browser for free, this is useful if you want
 
 To make a differential gene expression analysis is required having a set of samples and two groups to compare. This is the **Sample information file**. Take on mind the next advice:
 
--   ~DEasy~ can take .xslx, .csv and . tsv files
+-   ~DEasy~ can take .xslx, or .csv files
 
 <!-- -->
 
@@ -45,7 +49,7 @@ The next table shows an example where the 20 samples belong to two main groups a
 
 The second table required to perform differential expression analysis is the **Raw counts file** a database with all the transcripts of genes that where found on each one of the samples, take on mind these advises:
 
--   DEasy can take .xslx, .csv and . tsv files
+-   DEasy can take .xslx or .csv files
 
 -   The first column must contain all the gene or transcript names
 
@@ -63,7 +67,7 @@ The next table show the head of a **Raw counts file**
 
 #### The panels
 
-\~DEasy\~ have sidebar panel where you can upload the **Raw counts file** and **Sample information file**. you can upload just *xlsx, tsv* or *csv* files. This app can deal with files with a maximum size of 500MB.
+\~DEasy\~ have sidebar panel where you can upload the **Raw counts file** and **Sample information file**. you can upload just *xlsx* or *csv* files. This app can deal with files with a maximum size of 500MB.
 
 ![](images/app_01.png) Once you provide the file with the correct format you can review your data on the preview tab panel, by default \~DEasy\~ take the second column as the group (Treatments) that are going to be compared.
 
