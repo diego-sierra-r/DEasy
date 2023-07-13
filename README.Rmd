@@ -21,9 +21,13 @@ library(devtools)
 install_github("diego-sierra-r/DEasy")
 ```
 
-Then you can use this shinyapp/package in a R session: - TODO image \####
+Then you can use this shinyapp/package in a R session:
+
+![](images/DEasy_01.JPG)
 
 ### Using a Web browser
+
+One of the advanteages of DEasy is the you can run DEE analyses without prior knowledge programming or without solid R bases, you just need internet connection an got to: **PAGINA WEB**
 
 #### Preparing the data
 
@@ -65,6 +69,8 @@ The next table show the head of a **Raw counts file**
 
 ![](images/Counts_01.JPG)
 
+DESeq2 performs an internal normalization procedure using the geometric mean, which is calculated for each gene across all samples. The counts for a gene in each sample is then divided by this mean: see more [Documentation](http://bioconductor.org/packages/devel/bioc/vignettes/DESeq2/inst/doc/DESeq2.html#why-un-normalized-counts) for DESeq2, on the other hand, edgeR use TMM method to compute normalization factors that represent sample-specific biasesconsidering library size: see more [Documentation](https://bioconductor.org/packages/release/bioc/vignettes/edgeR/inst/doc/edgeRUsersGuide.pdf).
+
 #### The panels
 
 \~DEasy\~ have sidebar panel where you can upload the **Raw counts file** and **Sample information file**. you can upload just *xlsx* or *csv* files. This app can deal with files with a maximum size of 500MB.
@@ -73,9 +79,7 @@ The next table show the head of a **Raw counts file**
 
 ![](images/app_02.png)
 
-The next section are the parameters, you can select `DESeq2` or `edge2`, to performance the analysis, if you have a second group on your sample information file you want to test the interaction between treatment, for example \~SEX + DIET you can select add that interaction, by default ~Deasy~ chose "none" interaction, in other words It just considerate the the first treatment.
-
-## Explicar la Normalizacion interna que hacen los paquetes
+The next section are the parameters, you can select `DESeq2` or `edge2`, to performance the analysis, if you have a second group on your sample information file you want to test the interaction between treatment, for example \~SEX + DIET you can select add that interaction, by default ~DEasy~ chose "none" interaction, in other words It just considerate the the first treatment.
 
 ![](images/app_03.png)
 
