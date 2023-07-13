@@ -45,12 +45,6 @@ ui <- shinyUI(fluidPage(
         min = 0.5,
         max = 4
       ),
-      selectInput(
-        inputId = "palette",
-        label = "Color palette",
-        choices = rownames(brewer.pal.info),
-        selected = "Set1"
-      ),
       # main action button
       actionButton(
         inputId = "run",

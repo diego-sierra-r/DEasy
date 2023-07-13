@@ -8,14 +8,9 @@ library(openxlsx)
 library(ggpubr)
 library(ggrepel)
 library(rlang)
-library(reshape2)
-library(gridExtra)
-library(gtable)
-library(grid)
 library(magrittr)
 library(glue)
 library(waiter)
-library(statmod)
 
 options(shiny.maxRequestSize = 500 *
   1024^2)
@@ -46,46 +41,81 @@ colors <- c(
 MDS_plot <- function(countData,
                      colData,
                      treatment,
-                     interac = "None") {
-  if (interac == "None") {
-    design <- as.formula(paste0("~ ", treatment))
-  } else if (is.null(interac)) {
-    design <- as.formula(paste0("~ ", treatment))
-  } else {
-    design <- as.formula(paste0("~ ", treatment, "+ ", interac))
-  }
-  dds <- DESeqDataSetFromMatrix(
-    countData = as.matrix(countData),
-    colData = colData,
-    design = design
-  )
-  vsd_0 <- vst(dds, blind = F) # calcualte dispersion trend
-  sampleDists <- dist(t(assay(vsd_0))) # Calculate distance matrix
-  sampleDistMatrix <-
-    as.matrix(sampleDists) # Create distance matrix
-  mdsData <- data.frame(cmdscale(sampleDistMatrix)) # perform MDS
-  mds <- cbind(mdsData, as.data.frame(colData(vsd_0)))
-  colors <- renderText({
-    rv()
-  })
+                     interac = "None",
+                     pkg) {
   
-  #TODo  hacer bien el MDS con edgeR, solo estas cambiandole el titutulo pero sigue siendo un MDS de DESeq2###
 
-    F_vr_M_DESeq2_MDS <- ggplot(mds, aes(X1, X2, color = SEX)) +
+  
+  if (pkg == "DESeq2") {
+    
+    if (interac == "None") {
+      design = as.formula(paste0("~ ", treatment))
+    } else if (is.null(interac)) {
+      design = as.formula(paste0("~ ", treatment))
+    } else {
+      design =  as.formula(paste0("~ ", treatment, "+ ", interac))
+    }
+    
+    dds <- DESeqDataSetFromMatrix(countData = as.matrix(countData),
+                                  colData = colData,
+                                  design = design)
+    vsd_0 <- vst(dds, blind = F) # calcualte dispersion trend
+    sampleDists <- dist(t(assay(vsd_0))) #Calculate distance matrix
+    sampleDistMatrix <- as.matrix( sampleDists ) # Create distance matrix
+    mdsData <- data.frame(cmdscale(sampleDistMatrix)) #perform MDS
+    mds <- cbind(mdsData, as.data.frame(colData(vsd_0)))
+    
+    F_vr_M_DESeq2_MDS <-  ggplot(mds, aes(X1,X2,color=SEX)) +
       geom_label_repel(aes(label = rownames(mds)), size = 3) +
+      geom_point(size=3) +
+      scale_color_manual(values =  c("#B22222","#8B008B"),
+                         labels = c("Group 1", "Group 2"),
+                         name = "") +
+      labs(title = "Females vr Males DESeq2",
+           x = "Dim 1",
+           y = "Dim 2") +
+      theme_classic2()
+    
+    
+    return(F_vr_M_DESeq2_MDS)
+  } else if (pkg == "edgeR") {
+    dgList <- DGEList(counts = countData, genes = rownames(countData))
+    y <- dgList
+    if (interac == "None") {
+      treatment = treatment
+    } else if (is.null(interac)) {
+      treatment = treatment
+    } else {
+      treatment = c(treatment,interac)
+    }
+    
+    design <- get_model(colData, treatment)
+    keep <- filterByExpr(y, design = design)
+    y <- y[keep, , keep.lib.sizes = FALSE]
+    y <- calcNormFactors(y) #
+    y <- estimateDisp(y, design, robust = TRUE)
+    logcpm <- cpm(y, log = TRUE)
+    x <- plotMDS(logcpm)
+    sampleDist <- dist(t(x$distance.matrix.squared))
+    sampleDistMatrix <- as.matrix(sampleDist) # Create distance matrix
+    mdsData <- data.frame(cmdscale(sampleDistMatrix))
+    mdsData <- cbind(mdsData, colData)
+    
+    plot <-  ggplot(mdsData, aes(X1, X2, color = SEX)) +
+      geom_label_repel(aes(label = rownames(mdsData)), size = 3) +
       geom_point(size = 3) +
       scale_color_manual(
-        values = c("#B22222", "#8B008B"),
-        labels = c("Female", "Male"),
-        name = "Sex"
+        values =  c("#B22222", "#8B008B"),
+        labels = c("Group 1", "Group 2"),
+        name = ""
       ) +
-      labs(
-        title = "DESeq2",
-        x = "Dim 1",
-        y = "Dim 2"
-      ) +
+      labs(title = "edgeR",
+           x = "Dim 1",
+           y = "Dim 2") +
       theme_classic2()
-    return(F_vr_M_DESeq2_MDS)
+    return(plot)
+    
+  }
 }
 
 ## MA-plot function
@@ -641,7 +671,8 @@ server <- shinyServer(function(input, output) {
       countData = raw_counts_data(),
       colData = sampleinfo_data(),
       treatment = input$treatment,
-      interac = input$interaction
+      interac = input$interaction,
+      pkg = input$pgk
     )
   })
 

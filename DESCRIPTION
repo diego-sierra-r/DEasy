@@ -12,8 +12,17 @@ RoxygenNote: 7.2.3
 Suggests: 
     testthat (>= 3.0.0)
     rlang (>= 1.1.0)
-    DESeq2
-    edgeR
-    shiny
-    BiocManager
 Config/testthat/edition: 3
+Imports: 
+    BiocManager,
+    DESeq2,
+    edgeR,
+    ggplot2,
+    ggpubr,
+    ggrepel,
+    glue,
+    magrittr,
+    openxlsx,
+    shiny,
+    tidyr,
+    waiter
