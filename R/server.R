@@ -1,16 +1,4 @@
-library(DESeq2)
-library(tidyr)
-library(dplyr)
-library(edgeR)
-library(ggplot2)
-library(shiny)
-library(openxlsx)
-library(ggpubr)
-library(ggrepel)
-library(rlang)
-library(magrittr)
-library(glue)
-library(waiter)
+
 
 options(shiny.maxRequestSize = 500 *
   1024^2)
