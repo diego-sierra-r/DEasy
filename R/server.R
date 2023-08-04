@@ -2,6 +2,8 @@
 
 options(shiny.maxRequestSize = 500 *
   1024^2)
+options(repos = BiocManager::repositories())
+
 
 # define colors needed to customize tables
 set.seed(123)
