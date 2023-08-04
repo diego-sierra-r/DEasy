@@ -69,7 +69,7 @@ MDS_plot <- function(countData,
     
     return(F_vr_M_DESeq2_MDS)
   } else if (pkg == "edgeR") {
-    dgList <- DGEList(counts = countData, genes = rownames(countData))
+    dgList <- edgeR::DGEList(counts = countData, genes = rownames(countData))
     y <- dgList
     if (interac == "None") {
       treatment = treatment
@@ -261,7 +261,7 @@ DE_edgeR_design <- function(countData,
                             treatment,
                             threshold,
                             alpha) {
-  dgList <- DGEList(counts = countData, genes = rownames(countData))
+  dgList <- edgeR::DGEList(counts = countData, genes = rownames(countData))
   y <- dgList
   design <- get_model(colData, treatment)
   keep <- filterByExpr(y, design = design)
@@ -271,7 +271,7 @@ DE_edgeR_design <- function(countData,
   fit <- glmQLFit(y, design)
   qlf <- glmQLFTest(fit, coef = 2)
   qlf$table$FDR <- p.adjust(qlf$table$PValue, method = "BH")
-  qlf$table <- qlf$table %>%
+  qlf$table <- qlf$table |>
     mutate(., Difference = (
       case_when(
         .data$logFC >= threshold & .data$FDR <= alpha ~ "UP",
@@ -353,7 +353,7 @@ DE_DESeq2_design <- function(countData,
     design = treatment
   )
 
-  keep <- rowSums(counts(dds)) >= 10
+  keep <- rowSums(BiocGenerics::countss(dds)) >= 10
   dds <- dds[keep, ]
   dds <- DESeq(dds)
   res <- results(dds, alpha = alpha, lfcThreshold = 0)
@@ -405,7 +405,7 @@ DE_DESeq2_main <- function(countData,
   }
   res <- as.data.frame(res)
 
-  res <- res %>%
+  res <- res |>
     mutate(., Difference = (
       case_when(
         .data$log2FoldChange >= threshold & .data$padj <= alpha ~ "UP",
@@ -492,12 +492,12 @@ server <- shinyServer(function(input, output) {
   treatment_choose <- reactive({
     req(input$sampleinfo)
     file2 <- sampleinfo_data()
-    column <- file2[[input$treatment]] %>% as.factor()
+    column <- file2[[input$treatment]] |> as.factor()
   })
   interection_choose <- reactive({
     req(input$sampleinfo)
     file2 <- read.csv(input$sampleinfo$datapath)
-    column <- file2[[input$interaction]] %>% as.factor()
+    column <- file2[[input$interaction]] |> as.factor()
   })
 
   # reactive values (treatment choosen)
@@ -529,7 +529,7 @@ server <- shinyServer(function(input, output) {
         scrollX = "200px",
         scrollY = "530px"
       )
-    ) %>%
+    ) |>
       DT::formatStyle(
         as.character(input$treatment),
         backgroundColor = DT::styleEqual(
@@ -558,7 +558,7 @@ server <- shinyServer(function(input, output) {
     if (input$interaction == "None") {
       treatment_DT()
     } else {
-      treatment_DT() %>% DT::formatStyle(
+      treatment_DT() |> DT::formatStyle(
         as.character(input$interaction),
         backgroundColor = DT::styleEqual(
           levels = unique(interection_choose()),
