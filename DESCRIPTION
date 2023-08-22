@@ -25,4 +25,5 @@ Imports:
     openxlsx,
     shiny,
     tidyr,
-    waiter
+    waiter,
+    limma

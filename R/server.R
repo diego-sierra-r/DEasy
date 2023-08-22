@@ -46,31 +46,32 @@ MDS_plot <- function(countData,
       design =  as.formula(paste0("~ ", treatment, "+ ", interac))
     }
     
-    dds <- DESeqDataSetFromMatrix(countData = as.matrix(countData),
+    dds <- DESeq2::DESeqDataSetFromMatrix(countData = as.matrix(countData),
                                   colData = colData,
                                   design = design)
-    vsd_0 <- vst(dds, blind = F) # calcualte dispersion trend
-    sampleDists <- dist(t(assay(vsd_0))) #Calculate distance matrix
+    vsd_0 <- DESeq2::vst(dds, blind = F) # calcualte dispersion trend
+    sampleDists <- dist(t(SummarizedExperiment::assay(vsd_0))) #Calculate distance matrix
     sampleDistMatrix <- as.matrix( sampleDists ) # Create distance matrix
     mdsData <- data.frame(cmdscale(sampleDistMatrix)) #perform MDS
-    mds <- cbind(mdsData, as.data.frame(colData(vsd_0)))
+    mds <- cbind(mdsData, as.data.frame(SummarizedExperiment::colData(vsd_0)))
     
-    F_vr_M_DESeq2_MDS <-  ggplot(mds, aes(X1,X2,color=SEX)) +
-      geom_label_repel(aes(label = rownames(mds)), size = 3) +
-      geom_point(size=3) +
-      scale_color_manual(values =  c("#B22222","#8B008B"),
+    F_vr_M_DESeq2_MDS <-  ggplot2::ggplot(mds, ggplot2::aes(X1,X2,color=SEX)) +
+      ggrepel::geom_label_repel(ggplot2::aes(label = rownames(mds)), size = 3) +
+      ggplot2::geom_point(size=3) +
+      ggplot2::scale_color_manual(values =  c("#B22222","#8B008B"),
                          labels = c("Group 1", "Group 2"),
                          name = "") +
-      labs(title = "Females vr Males DESeq2",
+      ggplot2::labs(title = "DESeq2",
            x = "Dim 1",
            y = "Dim 2") +
-      theme_classic2()
+      ggpubr::theme_classic2()
     
     
     return(F_vr_M_DESeq2_MDS)
   } else if (pkg == "edgeR") {
     dgList <- edgeR::DGEList(counts = countData, genes = rownames(countData))
     y <- dgList
+    treatment = treatment
     if (interac == "None") {
       treatment = treatment
     } else if (is.null(interac)) {
@@ -80,29 +81,29 @@ MDS_plot <- function(countData,
     }
     
     design <- get_model(colData, treatment)
-    keep <- filterByExpr(y, design = design)
+    keep <- edgeR::filterByExpr(y, design = design)
     y <- y[keep, , keep.lib.sizes = FALSE]
-    y <- calcNormFactors(y) #
-    y <- estimateDisp(y, design, robust = TRUE)
-    logcpm <- cpm(y, log = TRUE)
-    x <- plotMDS(logcpm)
+    y <- edgeR::calcNormFactors(y) #
+    y <- edgeR::estimateDisp(y, design, robust = TRUE)
+    logcpm <- edgeR::cpm(y, log = TRUE)
+    x <- limma::plotMDS(logcpm)
     sampleDist <- dist(t(x$distance.matrix.squared))
     sampleDistMatrix <- as.matrix(sampleDist) # Create distance matrix
     mdsData <- data.frame(cmdscale(sampleDistMatrix))
     mdsData <- cbind(mdsData, colData)
     
-    plot <-  ggplot(mdsData, aes(X1, X2, color = SEX)) +
-      geom_label_repel(aes(label = rownames(mdsData)), size = 3) +
-      geom_point(size = 3) +
-      scale_color_manual(
+    plot <-  ggplot2::ggplot(mdsData, ggplot2::aes(X1, X2, color = SEX)) +
+      ggrepel::geom_label_repel(ggplot2::aes(label = rownames(mdsData)), size = 3) +
+      ggplot2::geom_point(size = 3) +
+      ggplot2::scale_color_manual(
         values =  c("#B22222", "#8B008B"),
         labels = c("Group 1", "Group 2"),
         name = ""
       ) +
-      labs(title = "edgeR",
+      ggplot2::labs(title = "edgeR",
            x = "Dim 1",
            y = "Dim 2") +
-      theme_classic2()
+      ggpubr::theme_classic2()
     return(plot)
     
   }
@@ -113,47 +114,47 @@ MDS_plot <- function(countData,
 
 MA_plot <- function(df) {
   if (length(colnames(df)) == 7) {
-    plot <- ggplot(
+    plot <- ggplot2::ggplot(
       data = df,
-      aes(
+      ggplot2::aes(
         x = log2(baseMean),
         y = log2FoldChange,
         color = Difference
       )
     ) +
-      geom_point(alpha = 0.75) +
+      ggplot2::geom_point(alpha = 0.75) +
       #        geom_hex(bins = 30) +
-      labs(
+      ggplot2::labs(
         color = "Differentially expressed",
         fill = "Number of transcripts"
       ) +
-      xlab("Log2 Base-mean") +
-      ylab("log2 Fold-change") +
-      theme_classic2() +
-      coord_flip() +
-      ggtitle("DESeq2")
+      ggplot2::xlab("Log2 Base-mean") +
+      ggplot2::ylab("log2 Fold-change") +
+      ggpubr::theme_classic2() +
+      ggplot2::coord_flip() +
+      ggplot2::ggtitle("DESeq2")
 
     return(plot)
   } else if (length(colnames(df)) == 6) {
-    plot <- ggplot(
+    plot <- ggplot2::ggplot(
       data = df,
-      aes(
+      ggplot2::aes(
         x = logCPM,
         y = logFC,
         color = Difference
       )
     ) +
-      geom_point(alpha = 0.75) +
+      ggplot2::geom_point(alpha = 0.75) +
       #        geom_hex(bins = 30) +
-      labs(
+      ggplot2::labs(
         color = "Differentially expressed",
         fill = "Number of transcripts"
       ) +
-      xlab("Log2 Base-mean") +
-      ylab("log2 Fold-change") +
-      theme_classic2() +
-      coord_flip() +
-      ggtitle("edgeR")
+      ggplot2::xlab("Log2 Base-mean") +
+      ggplot2::ylab("log2 Fold-change") +
+      ggpubr::theme_classic2() +
+      ggplot2::coord_flip() +
+      ggplot2::ggtitle("edgeR")
     return(plot)
   }
 }
@@ -173,32 +174,31 @@ single_gen_plot <-
       design <- as.formula(paste0("~ ", treatment, "+ ", interaction))
     }
 
-    deseq2Data <- DESeqDataSetFromMatrix(
+    deseq2Data <- DESeq2::DESeqDataSetFromMatrix(
       countData = countData,
       colData = ColData,
       design = design
     )
     intgroup <- c(colnames(deseq2Data@colData))
     otop2Counts <-
-      plotCounts(
+      DESeq2::plotCounts(
         deseq2Data,
         gene = as.character(geneID),
         intgroup = intgroup,
         returnData = TRUE
       )
 
-
-    plot <- ggplot(
+    plot <- ggplot2::ggplot(
       otop2Counts,
-      aes(
-        x = !!sym(names(otop2Counts)[2]),
+      ggplot2::aes(
+        x = !!dplyr::sym(names(otop2Counts)[2]),
         y = count,
-        color = !!sym(names(otop2Counts)[2]),
+        color = !!dplyr::sym(names(otop2Counts)[2]),
       )
     ) +
-      geom_point() +
-      theme_classic2() +
-      labs(
+      ggplot2::geom_point() +
+      ggpubr::theme_classic2() +
+      ggplot2::labs(
         title = NULL,
         y = "Counts",
         x = "Treatment",
@@ -264,16 +264,16 @@ DE_edgeR_design <- function(countData,
   dgList <- edgeR::DGEList(counts = countData, genes = rownames(countData))
   y <- dgList
   design <- get_model(colData, treatment)
-  keep <- filterByExpr(y, design = design)
+  keep <- edgeR::filterByExpr(y, design = design)
   y <- y[keep, , keep.lib.sizes = FALSE]
-  y <- calcNormFactors(y) #
-  y <- estimateDisp(y, design, robust = TRUE)
-  fit <- glmQLFit(y, design)
-  qlf <- glmQLFTest(fit, coef = 2)
+  y <- edgeR::calcNormFactors(y) #
+  y <- edgeR::estimateDisp(y, design, robust = TRUE)
+  fit <- edgeR::glmQLFit(y, design)
+  qlf <- edgeR::glmQLFTest(fit, coef = 2)
   qlf$table$FDR <- p.adjust(qlf$table$PValue, method = "BH")
-  qlf$table <- qlf$table |>
-    mutate(., Difference = (
-      case_when(
+  qlf$table <-  
+    dplyr::mutate(qlf$table, Difference = (
+      dplyr::case_when(
         .data$logFC >= threshold & .data$FDR <= alpha ~ "UP",
         .data$logFC <= -threshold &
           .data$FDR <= alpha ~ "DOWN",
@@ -353,10 +353,10 @@ DE_DESeq2_design <- function(countData,
     design = treatment
   )
 
-  keep <- rowSums(BiocGenerics::countss(dds)) >= 10
+  keep <- rowSums(BiocGenerics::counts(dds)) >= 10
   dds <- dds[keep, ]
-  dds <- DESeq(dds)
-  res <- results(dds, alpha = alpha, lfcThreshold = 0)
+  dds <- DESeq2::DESeq(dds)
+  res <- DESeq2::results(dds, alpha = alpha, lfcThreshold = 0)
   return(as.data.frame(res))
 }
 
@@ -405,9 +405,9 @@ DE_DESeq2_main <- function(countData,
   }
   res <- as.data.frame(res)
 
-  res <- res |>
-    mutate(., Difference = (
-      case_when(
+  res <-
+    dplyr::mutate(res, Difference = (
+      dplyr::case_when(
         .data$log2FoldChange >= threshold & .data$padj <= alpha ~ "UP",
         .data$log2FoldChange <= -threshold &
           .data$padj <= alpha ~ "DOWN",
