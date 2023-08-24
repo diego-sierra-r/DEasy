@@ -8,7 +8,7 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ## DEasy!
 
-This is a shiny app created to make Differential gene expression (DGE) analyses easier, With DEasy is possible make DGE analysis from raw counts using `DESeq2` or `edgeR`, those are the most used and better documented packages to perform DGE analyses.
+This is a shiny app created to make Differential gene expression (DGE) analyses easier, With `DEasy` is possible make DGE analysis from raw counts using `DESeq2` or `edgeR`, those are the most used and better documented packages to perform DGE analyses.
 
 ## How to use it?
 
@@ -27,15 +27,15 @@ Then you can use this shinyapp/package in a R session:
 
 ### Using a Web browser
 
-One of the advanteages of DEasy is the you can run DEE analyses without prior knowledge programming or without solid R bases, you just need internet connection an got to: **PAGINA WEB**
+One of the advantages of DEasy is the you can run DE analyses without prior knowledge programming or without solid R bases, you just need internet connection and clicking on: [DEasy!](https://posfer585.shinyapps.io/DEasy/)
 
 #### Preparing the data
 
-You can access to ~DEasy~ using web browser for free, this is useful if you want to use the app without using R, but essentially the performance its the same. in any case, first you have prepare the data:
+You can access to ~DEasy~ using web browser for free, this is useful if you want to use the app without using R, There are not major differences, essentially the performance its the same. in any case, first you have prepare the data:
 
 To make a differential gene expression analysis is required having a set of samples and two groups to compare. This is the **Sample information file**. Take on mind the next advice:
 
--   ~DEasy~ can take .xslx, or .csv files
+-   ~DEasy~ can take .xslx or .csv files
 
 <!-- -->
 
@@ -51,7 +51,7 @@ The next table shows an example where the 20 samples belong to two main groups a
 
 ![](images/samples_01.JPG)
 
-The second table required to perform differential expression analysis is the **Raw counts file** a database with all the transcripts of genes that where found on each one of the samples, take on mind these advises:
+The second table required to perform differential expression analysis is the **Raw counts file,** a table with all the transcripts or genes that where found on each one of the samples, take on mind these advises:
 
 -   DEasy can take .xslx or .csv files
 
@@ -59,9 +59,9 @@ The second table required to perform differential expression analysis is the **R
 
 -   The number of samples must be equal to the number of samples on your **Sample information file**
 
--   The ID related to each of the samples must be the same between **Sample information** file and this **Raw counts file**
+-   The ID related to each of the samples must be the same between **Sample information** file and the **Raw counts file**
 
--   The counts must the raw counts, ~DEasy~ use specific normalizing method according to the package chosen internally (`DEseq2` or `edgeR` ).
+-   The counts must be raw counts, ~DEasy~ use specific normalizing method according to the package chosen internally (`DEseq2` or `edgeR`).
 
 -   All columns must have the same length.
 
@@ -69,7 +69,7 @@ The next table show the head of a **Raw counts file**
 
 ![](images/Counts_01.JPG)
 
-DESeq2 performs an internal normalization procedure using the geometric mean, which is calculated for each gene across all samples. The counts for a gene in each sample is then divided by this mean: see more [Documentation](http://bioconductor.org/packages/devel/bioc/vignettes/DESeq2/inst/doc/DESeq2.html#why-un-normalized-counts) for DESeq2, on the other hand, edgeR use TMM method to compute normalization factors that represent sample-specific biasesconsidering library size: see more [Documentation](https://bioconductor.org/packages/release/bioc/vignettes/edgeR/inst/doc/edgeRUsersGuide.pdf).
+DESeq2 performs an internal normalization procedure using the geometric mean, which is calculated for each gene across all samples. The counts for a gene in each sample is then divided by this mean: see more [Documentation](http://bioconductor.org/packages/devel/bioc/vignettes/DESeq2/inst/doc/DESeq2.html#why-un-normalized-counts) for DESeq2, on the other hand, edgeR use TMM method to compute normalization factors that represent sample-specific biases considering library size: see more [Documentation](https://bioconductor.org/packages/release/bioc/vignettes/edgeR/inst/doc/edgeRUsersGuide.pdf).
 
 #### The panels
 
@@ -79,11 +79,13 @@ DESeq2 performs an internal normalization procedure using the geometric mean, wh
 
 ![](images/app_02.png)
 
-The next section are the parameters, you can select `DESeq2` or `edge2`, to performance the analysis, if you have a second group on your sample information file you want to test the interaction between treatment, for example \~SEX + DIET you can select add that interaction, by default ~DEasy~ chose "none" interaction, in other words It just considerate the the first treatment.
+The next section are the parameters, you can select `DESeq2` or `edge2`, to performance the analysis, if you have a second group on your sample information file and you want to test the interaction between treatment, for example \~SEX + DIET you can select "Add interaction", by default ~DEasy~ chose "none" interaction, in other words It just considerate the the first treatment.
 
 ![](images/app_03.png)
 
-Then you can set an alfa value (p-value) to ... and a threshold..., once you have defined the parameters you have to clink on the **Run** button and go the **Results** tab to watch the results, this process usually take some minutes so you have time to go for a coffee. ones the the results main table is ready you can explore the pages. and look for significance difference on each transcript, or you can download the table and use other tools like Microsoft Excel to explore the data.
+Then you can set an alfa value (0.05 p-value by default) and a threshold where you con, once you have defined the parameters you have to clink on the **Run** button and go the **Results** tab to watch the results, this process usually take some minutes so you have time to go for a coffee. Once the results main table is ready you can explore the pages and look for significance difference on each transcript, or you can download the table and use other tools like Microsoft Excel to explore the data.
+
+Note: Shinny is a lazy web framework, so you have to click the **Results** panel after click on the **Run button** to start processing de data.
 
 ![](images/app_04.png)
 
@@ -91,16 +93,16 @@ A progressing bar should appear indicating the progress.
 
 ![](images/app_5.png)
 
-The last component on this app is the **Plot** tab section, the first plot its a Multidimentional scaling plot ...
+The last component on this app is the **Plot** tab section, the first plot its a Multidimentional scaling plot
 
-The second plot its a heatmap (UPGMA?...) that shows you how similar some samples according their differential gene expression.
+The second plot its a heatmap, that shows you how similar some samples according their differential gene expression, The clusting method behind this heatmap is Ward.d2 to find compact and spherical clusters.
 
-The third plot it's a MA-plot where you can visualizar how much differential gen expressed genes are between your treatments, and their proportion agains the number of genes who are not considered differentialy expressed.
+The third plot it's a MA-plot where you can visualize how much differentially expressed are your genes between your treatments, and their proportion again the number of genes who are not considered differentialy expressed.
 
 ![](images/app_06.png)
 
-Once you have found an interesting gene or transcript you can use the last tool on the left bottom corner to generate a basic plot where you can can vizualize differences on a specific gene.
+Once you have found an interesting gene or transcript you can use the last tool on the left bottom corner to generate a basic plot where you can visualize differences on a specific gene.
 
 ![](images/app_07.png)
 
-That's how `DEasy` can help you to explore and analyze datafrom Differential gene expression experiments, I hope you can find it useful 😀.
+That's how `DEasy` can help you to explore and analyze data from Differential gene expression experiments, I hope you can find it useful 😀.

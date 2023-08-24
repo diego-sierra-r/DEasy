@@ -764,6 +764,6 @@ server <- shinyServer(function(input, output) {
 
 
   output$readme <- renderUI({
-    tags$div(includeHTML("~/Documentos/R/my_pkgs/DEasy/README.html"))
+    tags$div(includeHTML("README.html"))
   })
 })

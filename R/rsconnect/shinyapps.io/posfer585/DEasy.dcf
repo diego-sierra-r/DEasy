@@ -5,7 +5,7 @@ account: posfer585
 server: shinyapps.io
 hostUrl: https://api.shinyapps.io/v1
 appId: 9453853
-bundleId: 7532303
+bundleId:
 url: https://posfer585.shinyapps.io/DEasy/
 asMultiple: FALSE
 asStatic: FALSE
