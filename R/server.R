@@ -767,3 +767,4 @@ server <- shinyServer(function(input, output) {
     tags$div(includeHTML("README.html"))
   })
 })
+
