@@ -9,9 +9,6 @@ License: GPL (>= 3)
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.2.3
-Suggests: 
-    testthat (>= 3.0.0)
-    rlang (>= 1.1.0)
 Config/testthat/edition: 3
 Imports: 
     BiocManager,
@@ -26,4 +23,6 @@ Imports:
     shiny,
     tidyr,
     waiter,
-    limma
+    limma,
+    testthat,
+    rlang
