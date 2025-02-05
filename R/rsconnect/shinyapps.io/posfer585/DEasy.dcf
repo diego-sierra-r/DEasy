@@ -1,11 +1,12 @@
 name: DEasy
 title: DEasy
-username:
+username: posfer585
 account: posfer585
 server: shinyapps.io
 hostUrl: https://api.shinyapps.io/v1
 appId: 9453853
-bundleId:
+bundleId: 9750027
 url: https://posfer585.shinyapps.io/DEasy/
+version: 1
 asMultiple: FALSE
 asStatic: FALSE

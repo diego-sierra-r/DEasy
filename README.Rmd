@@ -12,21 +12,6 @@ This is a shiny app created to make Differential gene expression (DGE) analyses 
 
 ## How to use it?
 
-### Using R
-
-If you want to run ~DEasy~ directly on you computer you can download it from github
-
-```{r eval=FALSE}
-library(devtools)
-install_github("diego-sierra-r/DEasy")
-```
-
-Then you can use this shinyapp/package in a R session:
-
-![](images/DEasy_01.JPG)
-
-### Using a Web browser
-
 One of the advantages of DEasy is the you can run DE analyses without prior knowledge programming or without solid R bases, you just need internet connection and clicking on: [DEasy!](https://posfer585.shinyapps.io/DEasy/)
 
 #### Preparing the data
@@ -105,4 +90,7 @@ Once you have found an interesting gene or transcript you can use the last tool 
 
 ![](images/app_07.png)
 
-That's how `DEasy` can help you to explore and analyze data from Differential gene expression experiments, I hope you can find it useful 😀.
+That's how `DEasy` can help you to explore and analyze data from Differential gene expression experiments, if you want more information you can ceck the GitHub repository here: [DEasy GitHub]([DEasy!](https://posfer585.shinyapps.io/DEasy/))
+
+I hope you can find *DEasy* useful 😀.
+

@@ -764,7 +764,7 @@ server <- shinyServer(function(input, output) {
 
 
   output$readme <- renderUI({
-    tags$div(includeHTML("README.html"))
+    tags$div(includeHTML("readme.html"))
   })
 })
 

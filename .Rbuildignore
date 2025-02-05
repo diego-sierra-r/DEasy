@@ -5,3 +5,6 @@
 ^LICENSE\.md$
 ^R/app\.R$
 ^app\.R$
+^_pkgdown\.yml$
+^docs$
+^pkgdown$
