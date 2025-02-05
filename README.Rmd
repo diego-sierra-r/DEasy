@@ -90,7 +90,7 @@ Once you have found an interesting gene or transcript you can use the last tool 
 
 ![](images/app_07.png)
 
-That's how `DEasy` can help you to explore and analyze data from Differential gene expression experiments, if you want more information you can ceck the GitHub repository here: [DEasy GitHub]([DEasy!](https://posfer585.shinyapps.io/DEasy/))
+That's how `DEasy` can help you to explore and analyze data from Differential gene expression experiments, if you want more information you can check the GitHub repository here: [DEasy GitHub]([DEasy!](https://posfer585.shinyapps.io/DEasy/)), also you can run this example using data from *tests* folder on GitHub. 
 
-I hope you can find *DEasy* useful 😀.
+I hope you can find `DEasy` useful 😀.
 
