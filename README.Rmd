@@ -1,5 +1,8 @@
 ---
----
+title: "Differential gene expression using DEasy"
+output: pdf_document
+date: "2025-02-05"
+author: "Diego Sierra R."
 ---
 
 ```{r setup, include=FALSE}
@@ -8,7 +11,7 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ## DEasy!
 
-This is a shiny app created to make Differential gene expression (DGE) analyses easier, With `DEasy` is possible make DGE analysis from raw counts using `DESeq2` or `edgeR`, those are the most used and better documented packages to perform DGE analyses.
+`DEasy` is a shiny app created to make Differential gene expression (DGE) analyses easier, with `DEasy` is possible make DGE analysis from raw counts using `DESeq2` or `edgeR`, those are the most used and better documented packages to perform DGE analyses.
 
 ## How to use it?
 
@@ -54,11 +57,13 @@ The next table show the head of a **Raw counts file**
 
 ![](images/Counts_01.JPG)
 
+You can get the example data and try yourself here: [data example](https://github.com/diego-sierra-r/DEasy/tree/main/tests)
+
 DESeq2 performs an internal normalization procedure using the geometric mean, which is calculated for each gene across all samples. The counts for a gene in each sample is then divided by this mean: see more [Documentation](http://bioconductor.org/packages/devel/bioc/vignettes/DESeq2/inst/doc/DESeq2.html#why-un-normalized-counts) for DESeq2, on the other hand, edgeR use TMM method to compute normalization factors that represent sample-specific biases considering library size: see more [Documentation](https://bioconductor.org/packages/release/bioc/vignettes/edgeR/inst/doc/edgeRUsersGuide.pdf).
 
 #### The panels
 
-\~DEasy\~ have sidebar panel where you can upload the **Raw counts file** and **Sample information file**. you can upload just *xlsx* or *csv* files. This app can deal with files with a maximum size of 500MB.
+\~DEasy\~ have sidebar panel where you can upload the **Raw counts file** and **Sample information file**. you can upload just *.xlsx* or *.csv* files. This app can deal with files with a maximum size of 500MB.
 
 ![](images/app_01.png) Once you provide the file with the correct format you can review your data on the preview tab panel, by default \~DEasy\~ take the second column as the group (Treatments) that are going to be compared.
 
@@ -90,7 +95,7 @@ Once you have found an interesting gene or transcript you can use the last tool 
 
 ![](images/app_07.png)
 
-That's how `DEasy` can help you to explore and analyze data from Differential gene expression experiments, if you want more information you can check the GitHub repository here: [DEasy GitHub]([DEasy!](https://posfer585.shinyapps.io/DEasy/)), also you can run this example using data from *tests* folder on GitHub. 
+That's how `DEasy` can help you to explore and analyze data from Differential gene expression experiments, if you want more information you can check the GitHub repository here: [DEasy GitHub](https://github.com/diego-sierra-r/DEasy), also you can run this example using data from *tests* folder on GitHub. 
 
-I hope you can find `DEasy` useful 😀.
+I hope you can find `DEasy` useful.
 
