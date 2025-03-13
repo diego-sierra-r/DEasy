@@ -9,18 +9,6 @@ documented packages to perform DGE analyses.
 
 ## How to use it?
 
-### Using R
-
-If you want to run <sub>DEasy</sub> directly on you computer you can
-download it from github
-
-``` r
-library(devtools)
-install_github("diego-sierra-r/DEasy")
-```
-
-Then you can use this shinyapp/package in a R session: - TODO image
-\####
 
 ### Using a Web browser
 
@@ -28,7 +16,11 @@ Then you can use this shinyapp/package in a R session: - TODO image
 
 You can access to <sub>DEasy</sub> using web browser for free, this is
 useful if you want to use the app without using R, but essentially the
-performance its the same. in any case, first you have prepare the data:
+performance its the same (you can install the shiny app on your computer with "remotes" package on R too!). 
+
+[Link DEasy](https://posfer585.shinyapps.io/DEasy/)
+
+In any case, first you have prepare the data:
 
 To make a differential gene expression analysis is required having a set
 of samples and two groups to compare. This is the **Sample information
