@@ -89,7 +89,6 @@ example \~SEX + DIET you can select add that interaction, by default
 <sub>Deasy</sub> chose “none” interaction, in other words It just
 considerate the the first treatment.
 
-## Explicar la Normalizacion interna que hacen los paquetes
 
 ![](images/app_03.png)
 
