@@ -18,7 +18,7 @@ You can access to <sub>DEasy</sub> using web browser for free, this is
 useful if you want to use the app without using R, but essentially the
 performance its the same (you can install the shiny app on your computer with "remotes" package on R too!). 
 
-[Link DEasy](https://posfer585.shinyapps.io/DEasy/)
+[Link DEasy](https://diegoapps.shinyapps.io/DEasy/)
 
 In any case, first you have prepare the data:
 
